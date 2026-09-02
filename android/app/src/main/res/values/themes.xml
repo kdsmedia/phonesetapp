@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.Phoneset" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#0d001a</item>
+        <item name="android:navigationBarColor">#0d001a</item>
+        <item name="android:windowBackground">#0d001a</item>
+        <item name="android:colorAccent">#3daa3d</item>
+    </style>
+</resources>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0d001a"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="48dp"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="PHONESET" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="PHONESET"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="28sp"
+            android:letterSpacing="0.1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="by ALTOMEDIA"
+            android:textColor="#9CA3AF"
+            android:textSize="12sp"
+            android:layout_marginBottom="32dp" />
+
+        <EditText
+            android:id="@+id/input_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nama (untuk daftar)"
+            android:inputType="textPersonName"
+            android:background="@drawable/bg_input"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#9CA3AF"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp" />
+
+        <EditText
+            android:id="@+id/input_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/bg_input"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#9CA3AF"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp" />
+
+        <EditText
+            android:id="@+id/input_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:background="@drawable/bg_input"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#9CA3AF"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:id="@+id/error_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#F87171"
+            android:textSize="13sp"
+            android:minHeight="20dp"
+            android:layout_marginBottom="6dp" />
+
+        <Button
+            android:id="@+id/btn_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MASUK"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/bg_btn_green"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="DAFTAR AKUN BARU"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/bg_btn_outline"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Aplikasi berjalan di latar belakang. Kendali penuh melalui panel PHONESET."
+            android:textColor="#6B7280"
+            android:textSize="11sp"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp" />
+
+    </LinearLayout>
+</ScrollView>

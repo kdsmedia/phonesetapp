@@ -1,0 +1,7 @@
+#!/bin/sh
+APP_HOME=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+export APP_HOME
+if [ ! -x "$APP_HOME/gradle/wrapper/gradle-8.13" ]; then
+  echo "Gradle wrapper: menggunakan gradle sistem bila tersedia" >&2
+fi
+exec gradle "$@"

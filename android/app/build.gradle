@@ -1,0 +1,49 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.altomedia.phonesetapp'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.altomedia.phonesetapp"
+        minSdk 21
+        targetSdk 36
+        versionCode 1
+        versionName "1.0.0"
+        multiDexEnabled true
+
+        // Supabase (sinkron dengan panel index.html -- bukan Firebase)
+        buildConfigField "String", "SUPABASE_URL", "\"https://ikkqsyrbhkgfuycqbrfk.supabase.co\""
+        buildConfigField "String", "SUPABASE_ANON_KEY", "\"sb_publishable_LLz-yF-1B8NghthAu_iRCQ_2AyyO6P8\""
+        buildConfigField "String", "SUPABASE_DEVICE_ID", "\"\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.work:work-runtime:2.10.0'
+    implementation 'androidx.core:core-ktx:1.15.0'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+
+    // Firebase (sama seperti panel index.html: Realtime DB + Auth + Storage)
+    implementation platform('com.google.firebase:firebase-bom:32.8.1')
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-database'
+    implementation 'com.google.firebase:firebase-storage'
+}
