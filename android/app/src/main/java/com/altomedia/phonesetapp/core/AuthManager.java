@@ -3,35 +3,18 @@ package com.altomedia.phonesetapp.core;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.altomedia.phonesetapp.PhonesetApp;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.json.JSONObject;
+
 import java.util.UUID;
 
-/**
- * Login email/password identik dengan panel index.html.
- * Perangkat mendaftarkan dirinya di phoneset/users/{uid}/devices/{deviceId}/info.
- */
 public class AuthManager {
     private static final String TAG = "AuthManager";
-    private final FirebaseAuth auth;
     private final Context context;
 
-    public AuthManager(Context context() {
+    public AuthManager(Context context) {
         this.context = context.getApplicationContext();
-        this.auth = FirebaseAuth.getInstance();
     }
 
     public interface AuthCallback {
@@ -39,124 +22,93 @@ public class AuthManager {
         void onError(String message);
     }
 
-    /** Login ke akun yang sama dengan panel index.html, lalu daftarkan perangkat. */
-    public void login(String email, String password, AuthCallback cb() {
-        auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && auth.getCurrentUser() != null)) {
-                        FirebaseUser user = auth.getCurrentUser();
-                        registerDevice(user, cb;
-                    } else {
-                        cb.onError(getAuthError(task.getException()));
-                    }
-                }));
-    }
-
-    /** Buat akun baru (sama seperti tombol DAFTAR di panel panel index.html). */
-    public void register(String email, String password, String name, AuthCallback cb() {
-        auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && auth.getCurrentUser() != null)) {
-                        FirebaseUser user = auth.getCurrentUser();
-                        updateDisplayName(user, name, cb;
-                    } else {
-                        cb.onError(getAuthError(task.getException()));
-                    }
-                }));
-    }
-
-    public void logout( {
-        PhonesetApp.clearAuth(context);
-        try {
-            DatabaseReference deviceRef = PhonesetApp.deviceRef(context);
-            if (deviceRef != null) {
-                deviceRef.child("info").child("online").setValue(false);
-                deviceRef.child("info").child("lastSeen").setValue(System.currentTimeMillis());
+    public void login(String email, String password, AuthCallback cb) {
+        new Thread(() -> {
+            try {
+                JSONObject j = SupabaseClient.signInWithEmail(context, email, password);
+                String uid = j.getJSONObject("user").getString("id");
+                String em = j.getJSONObject("user").optString("email", email);
+                registerDevice(uid, em, cb);
+            } catch (Exception e) {
+                postError(cb, e);
             }
+        }).start();
+    }
+
+    public void register(String email, String password, String name, AuthCallback cb) {
+ {
+        new Thread(() -> {
+            try {
+                JSONObject j = SupabaseClient.signUpWithEmail(context, email, password, name);
+                String uid = j.getJSONObject("user").getString("id");
+                String em = j.getJSONObject("user").optString("email", email);
+                registerDevice(uid, em, cb);
+            } catch (Exception e) {
+                postError(cb, e);
+            }
+        }).start();
+    }
+
+    public void logout() {
+ try {
+            SupabaseClient.signOut(context;
         } catch (Exception ignored) {
-            // Firebase sudah logout.
-
-        auth.signOut();
+        }
+        PhonesetApp.clearAuth(context;
     }
 
-    private void updateDisplayName(FirebaseUser user, String name, AuthCallback cb() {
-        UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
-                .setDisplayName(name)
-                .build();
-        user.updateProfile(request).addOnCompleteListener(task -> {
-            if (task.isSuccessful())) {
-                saveProfile(user, name;
-                registerDevice(user, cb;
-            } else {
-                cb.onError("Gagal menyimpan profil");
-            }
-        }));
-    }
-
-    private void registerDevice(FirebaseUser user, AuthCallback cb() {
-
-        final String uid = user.getUid();
-        final String email = user.getEmail();
+    private void registerDevice(String uid, String email, AuthCallback cb) {
+ {
         final String deviceId = generateDeviceId();
         PhonesetApp.saveAuth(context, uid, email, deviceId;
-
-        DatabaseReference infoRef = FirebaseDatabase.getInstance()
-                .getReference("phoneset/users").child(uid).child("devices").child(deviceId).child("info");
-
-        Map<String, Object> info = new HashMap<>();
-        info.put("name", PhonesetApp.deviceName(context));
-        info.put("model", android.os.Build.MODEL;
-        info.put("manufacturer", android.os.Build.MANUFACTURER;
-        info.put("android", "Android " + android.os.Build.VERSION.RELEASE;
-        info.put("battery", BatteryReader.getBatteryPercent(context);
-        info.put("lastSeen", System.currentTimeMillis());
-        info.put("registeredAt", System.currentTimeMillis());
-        infoRef.setValue(info;
-
-        cb.onSuccess(uid, email;
+        JSONObject info = new JSONObject();
+        try {
+            info.put("name", PhonesetApp.deviceName(context);
+            info.put("model", android.os.Build.MODEL;
+            info.put("manufacturer", android.os.Build.MANUFACTURER;
+            info.put("android", "Android " + android.os.Build.VERSION.RELEASE;
+            info.put("battery", BatteryReader.getBatteryPercent(context;
+            info.put("lastSeen", System.currentTimeMillis();
+            info.put("registeredAt", System.currentTimeMillis();
+            SupabaseClient.registerDevice(context, info;
+            cb.onSuccess(uid, email;
+        } catch (Exception e) {
+            Log.w(TAG, "registerDevice", e;
+            cb.onError("Gagal mendaftarkan perangkat");
+        }
     }
 
     private String generateDeviceId() {
-        String existing = context.getSharedPreferences("phoneset", Context.MODE_PRIVATE).getString("device_id", null;
+ {
+        String existing = PhonesetApp.getDeviceId(context;
         if (existing != null) return existing;
-        String id = UUID.randomUUID().toString().replace("-", "").substring(0, 16;
+        String id = UUID.randomUUID().toString().replace("-", "" .substring(0, 16;
+        PhonesetApp.saveAuth(context, null, null, id;
         return id;
     }
 
-    private void saveProfile(FirebaseUser user, String name() {
-        DatabaseReference profileRef = FirebaseDatabase.getInstance()
-                .getReference("phoneset/users").child(user.getUid()).child("profile";
-        profileRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!snapshot.exists()) {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("name", name;
-                    data.put("email", user.getEmail());
-                    data.put("createdAt", System.currentTimeMillis());
-                    data.put("provider", "password");
-                    profileRef.setValue(data;
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.w(TAG, "saveProfile cancelled", error.toException());
-            }
-        }));
-    }
-
-    private String getAuthError(Exception e() {
+    private void postError(AuthCallback cb, Exception e) {
+ {
         String msg = e != null ? (e.getMessage() == null ? "" : e.getMessage()) : "";
-        if (msg.contains("INVALID_LOGIN_CREDENTIALS") || msg.contains("invalid-credential")
+        Log.w(TAG, "auth error", e;
+        if (msg.contains("Invalid login credentials")|| msg.contains("invalid-credential")
                 || msg.contains("user-not-found") || msg.contains("wrong-password")) {
-            return "Email atau password salah";
+ {
+            cb.onError("Email atau password salah");
+        } else if (msg.contains("already registered") || msg.contains("email-already-in-use")) {
+ {
+            cb.onError("Email sudah terdaftar");
+        } else if (msg.contains("Password should be at least") || msg.contains("weak-password")) {
+ {
+            cb.onError("Password terlalu lemah (min 6 karakter)");
+        } else if (msg.contains("invalid-email")) {
+ {
+            cb.onError("Format email tidak valid");
+        } else if (msg.contains("rate limit") || msg.contains("too-many-requests")) {
+ {
+            cb.onError("Terlalu banyak percobaan. Coba lagi nanti.");
+        } else {
+            cb.onError("Terjadi kesalahan. Coba lagi.");
         }
-        if (msg.contains("email-already-in-use")) return "Email sudah terdaftar";
-        if (msg.contains("weak-password")) return "Password terlalu lemah (min 6 karakter)";
-        if (msg.contains("invalid-email")) return "Format email tidak valid";
-        if (msg.contains("too-many-requests")) return "Terlalu banyak percobaan. Coba lagi nanti.";
-        if (msg.contains("network-request-failed")) return "Gagal terhubung ke jaringan";
-        return "Terjadi kesalahan. Coba lagi.";
     }
 }

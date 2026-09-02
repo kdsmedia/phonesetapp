@@ -11,9 +11,7 @@ import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
+import com.altomedia.phonesetapp.SupabaseConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -96,9 +94,8 @@ public final class CameraCapture {
 
     private static void upload(Context context, String deviceId, byte[] jpegData, CaptureCallback cb) {
 
-        StorageReference ref = FirebaseStorage.getInstance()
-                .getReference("phoneset_backup").child(deviceId)
-                .child("camera_" + System.currentTimeMillis() + ".jpg";
+        String b64 = Base64.encodeToString(jpegData, Base64.NO_WRAP;
+        String fileName = "camera_" + System.currentTimeMillis() + ".jpg";
         UploadTask task = ref.putBytes(jpegData;
         task.addOnSuccessListener(aVoid -> {
             ref.getDownloadUrl().addOnSuccessListener(uri -> {

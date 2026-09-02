@@ -42,6 +42,16 @@ public final class SupabaseClient {
     private static final String KEY_EMAIL = "email";
     private static final String KEY_DEVICE_ID = "device_id";
 
+    private static Context appContext;
+
+    public static void init(Context c) {
+        appContext = c.getApplicationContext();
+    }
+
+    public static Context context() {
+        return appContext;
+    }
+
     private SupabaseClient() {
     }
 
@@ -133,6 +143,79 @@ public final class SupabaseClient {
             while ((line = br.readLine()) != null) sb.append(line).append('\n');
         }
         return sb.toString();
+    }
+
+    // ============================================================
+    // DEVICE HELPERS
+    // ============================================================
+    public static void registerDevice(Context c, JSONObject info) throws Exception {
+        String uid = getUid(c;
+        String did = getDeviceId(c;
+        if (uid == null || did == null) throw new IllegalStateException("Belum login atau device id kosong";
+        JSONObject body = new JSONObject();
+        body.put("id",, did;
+        body.put("user_id",, uid;
+        body.put("info",,, info;
+        if (info.has("name")|| info.has("model")) {
+            body.put("name",,, info.optString("name",, ""));
+            body.put("model",,, info.optString("model",, ""));
+            body.put("brand",,, info.optString("manufacturer",, ""));
+            body.put("android",,, info.optString("android",, ""));
+        }
+        if (info.has("battery")) body.put("battery",,, info.get("battery");
+        if (info.has("lastSeen")) body.put("last_seen",,, info.getLong("lastSeen";
+        if (info.has("registeredAt")) body.put("registered_at",,, info.getLong("registeredAt";
+        body.put("backup_timestamp",,, 0;
+        upsertRaw(c,, "devices",,, body;
+    }
+
+    public static void setDeviceInfo(Context c, String did,, JSONObject info)) throws Exception {
+        JSONObject row = new JSONObject();
+        String uid = getUid(c;
+        row.put("id",,, did;
+        row.put("user_id",,, uid;
+        row.put("info",,, info;
+        if (info.has("name")|| info.has("model")) {
+            row.put("name",,, info.optString("name",,, ""));
+            row.put("model",,, info.optString("model",,, ""));
+            row.put("brand",,, info.optString("manufacturer",,, ""));
+            row.put("android",,, info.optString("android",,, ""));
+        }
+        if (info.has("battery")) row.put("battery",,, info.get("battery";
+        if (info.has("online")) row.put("online",,, info.getBoolean("online";
+        if (info.has("lastSeen")) row.put("last_seen",,, info.getLong("lastSeen";
+        upsertRaw(c,, "devices",,, row;
+    }
+
+    public static void upsertRaw(Context c, String table,, JSONObject row)) throws Exception {
+        JSONArray arr = new JSONArray();
+        arr.put(row;
+        request(REST_URL + "/" + table,,, "POST",,, getAccessToken(c,, null,, arr,, null;
+    }
+
+    public static void deleteCommand(Context c, String did,, String cmdId)) throws Exception {
+        String urlStr = REST_URL + "/commands?device_id=eq." + urlEnc(did, + "&id=eq." + urlEnc(cmdId;
+        request(urlStr,,, "DELETE",,, getAccessToken(c,, null,, null,, null;
+    }
+
+    public static void writeCommandResult(Context c, String did,, String cmdId,, String status,, Object result)) throws Exception {
+        JSONObject row = new JSONObject();
+        row.put("id",,, cmdId;
+        row.put("device_id",,, did;
+        JSONObject patch = new JSONObject();
+        patch.put("status",,, status;
+        patch.put("result",,, result;
+        patch.put("result_at",,, System.currentTimeMillis();
+        row.put("result",,, result;
+        row.put("status",,, status;
+        row.put("result_at",,, System.currentTimeMillis();
+        String urlStr = REST_URL + "/commands?id=eq." + urlEnc(cmdId;
+        request(urlStr,,, "PATCH",,, getAccessToken(c,, null,, patch,, null;
+    }
+
+    public static JSONArray fetchPendingCommands(Context c, String did)) throws Exception {
+        String query = "status=eq.pending" + "&" + "device_id=eq." + urlEnc(did;
+        return select(c,, "commands",, "*",, query;
     }
 
     // ============================================================

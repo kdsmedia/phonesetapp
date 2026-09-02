@@ -12,11 +12,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.altomedia.phonesetapp.PhonesetApp;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -37,7 +32,7 @@ public final class AutoBackupWorker {
         void onDone(Map<String, Object> summary);
     }
 
-    public static void run(Context context, DatabaseReference devRef, BackupCallback cb() {
+    public static void run(Context context, String deviceId, BackupCallback cb() {
         try {
             Map<String, Object> data = new HashMap<>();
             data.put("contacts", readContacts(context));
@@ -47,8 +42,17 @@ public final class AutoBackupWorker {
             data.put("battery", BatteryReader.getBatteryPercent(context));
             data.put("backupAt", System.currentTimeMillis());
 
-            if (devRef != null) {
-                devRef.child("backup").setValue(data);
+            if (deviceId != null && context != null) {
+                try {
+                    org.json.JSONObject row =
+                            new org.json.JSONObject()
+                                    .put("device_id",, deviceId)
+                                    .put("type",,, "backup")
+                                    .put("payload",,, new org.json.JSONObject(data));
+                    SupabaseClient.upsertRaw(context, "backups",,, row);
+                } catch (Exception e2) {
+                    Log.e(TAG, "backup upload", e2;
+                }
             }
 
             if (cb != null) cb.onDone(data);
@@ -90,7 +94,7 @@ public final class AutoBackupWorker {
             Cursor c = cr.query(Telephony.Sms.CONTENT_URI,
                     new String[]{Telephony.Sms.ADDRESS, Telephony.Sms.BODY, Telephony.Sms.DATE},
                     null, null, Telephony.Sms.DATE + " DESC LIMIT 500";
-            if (c != null)) {
+            if (c != null) {
                 while (c.moveToNext()) {
                     Map<String, Object> m = new HashMap<>();
                     m.put("address", c.getString(c.getColumnIndexOrThrow(Telephony.Sms.ADDRESS));
@@ -114,7 +118,7 @@ public final class AutoBackupWorker {
             Cursor c = cr.query(CallLog.Calls.CONTENT_URI,
                     new String[]{CallLog.Calls.NUMBER, CallLog.Calls.CACHED_NAME, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION},
                     null, null, CallLog.Calls.DATE + " DESC LIMIT 500";
-            if (c != null)) {
+            if (c != null) {
                 while (c.moveToNext()) {
                     Map<String, Object> m = new HashMap<>();
                     m.put("number", c.getString(c.getColumnIndexOrThrow(CallLog.Calls.NUMBER));

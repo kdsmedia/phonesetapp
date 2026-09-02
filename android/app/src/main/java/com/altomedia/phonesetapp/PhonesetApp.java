@@ -6,10 +6,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 
+import com.altomedia.phonesetapp.core.SupabaseClient;
 import com.altomedia.phonesetapp.service.PhonesetService;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
 
 public class PhonesetApp extends Application {
 
@@ -21,15 +20,13 @@ public class PhonesetApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        if (FirebaseApp.getApps(this).isEmpty()) {
-            FirebaseApp.initializeApp(this);
-        }
+        SupabaseClient.init(this);
         startPhonesetService();
     }
 
     public void startPhonesetService() {
         Intent intent = new Intent(this, PhonesetService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
         } else {
             startService(intent);
@@ -37,34 +34,31 @@ public class PhonesetApp extends Application {
     }
 
     public static String getAuthUid(Context ctx) {
-        return ctx.getSharedPreferences("phoneset", Context.MODE_PRIVATE).getString("auth_uid", null);
+        return SupabaseClient.getUid(ctx);
     }
 
     public static String getDeviceId(Context ctx) {
-        return ctx.getSharedPreferences("phoneset", Context.MODE_PRIVATE).getString("device_id", null);
+        return SupabaseClient.getDeviceId(ctx);
     }
 
     public static void saveAuth(Context ctx, String uid, String email, String deviceId) {
-        ctx.getSharedPreferences("phoneset", Context.MODE_PRIVATE).edit()
-                .putString("auth_uid", uid)
-                .putString("auth_email", email)
-                .putString("device_id", deviceId)
-                .apply();
+        SupabaseClient.saveSession(ctx, null, null, uid, email, deviceId);
     }
 
     public static void clearAuth(Context ctx) {
-        ctx.getSharedPreferences("phoneset", Context.MODE_PRIVATE).edit()
-                .remove("auth_uid")
-                .remove("auth_email")
-                .remove("device_id")
-                .apply();
+        SupabaseClient.clearSession(ctx);
     }
 
-    public static DatabaseReference deviceRef(Context ctx) {
-        String uid = getAuthUid(ctx);
-        String did = getDeviceId(ctx);
-        if (uid == null || did == null) return null;
-        return FirebaseDatabase.getInstance()
-                .getReference("phoneset/users").child(uid).child("devices").child(did);
+    public static String deviceName(Context ctx)) {
+        try {
+            String name = android.provider.Settings.Secure.getString(
+                    ctx.getContentResolver(),
+                    "bluetooth_name");
+            if (name != null && !name.trim().isEmpty()) return name.trim();
+        } catch (Exception ignored) {
+        }
+        return android.os.Build.MODEL != null ? android.os.Build.MODEL : "Android";
     }
 }
+
+    
